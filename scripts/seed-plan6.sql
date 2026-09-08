@@ -48,11 +48,11 @@ UPDATE shipping_slips SET customer_id = 'cust-3' WHERE id IN ('shp-3', 'shp-6');
 -- -----------------------------------------------
 -- 発注伝票 (Purchase Orders)
 -- -----------------------------------------------
--- NOTE: admin account uses full UUID '3ec44910-4c53-4c9d-b027-78dcef250625' (not 'acc-1')
+-- NOTE: admin account uses full UUID '74fe28f3-72fe-4bc0-bf8e-733411e8cc05' (not 'acc-1')
 INSERT INTO purchase_orders (id, order_number, ordered_at, expected_at, supplier_id, account_id, status, note, created_at) VALUES
-  ('po-1', 'PO-2026-001', '2026-04-28', '2026-05-10', 'sup-5', '3ec44910-4c53-4c9d-b027-78dcef250625', 'received',  '電子基板の補充発注',    '2026-04-28T09:00:00.000Z'),
+  ('po-1', 'PO-2026-001', '2026-04-28', '2026-05-10', 'sup-5', '74fe28f3-72fe-4bc0-bf8e-733411e8cc05', 'received',  '電子基板の補充発注',    '2026-04-28T09:00:00.000Z'),
   ('po-2', 'PO-2026-002', '2026-05-08', '2026-05-20', 'sup-2', 'acc-2',                                'ordered',   '鉄板・銅パイプ定期発注', '2026-05-08T10:00:00.000Z'),
-  ('po-3', 'PO-2026-003', '2026-05-14', '2026-05-28', 'sup-7', '3ec44910-4c53-4c9d-b027-78dcef250625', 'draft',     '',                      '2026-05-14T11:00:00.000Z');
+  ('po-3', 'PO-2026-003', '2026-05-14', '2026-05-28', 'sup-7', '74fe28f3-72fe-4bc0-bf8e-733411e8cc05', 'draft',     '',                      '2026-05-14T11:00:00.000Z');
 
 INSERT INTO purchase_order_details (id, order_id, product_id, line_no, quantity) VALUES
   -- PO-001: 電子基板×50, 絶縁テープ×30
