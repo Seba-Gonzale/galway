@@ -1,4 +1,4 @@
-> **Último commit:** pendiente — archivo nuevo (sin commit previo en `.ai/`)
+> **Último commit:** `275ae5f` — `refactor: extract shared service helpers (handleDbError, auditLog) and apply to category and customer`
 
 ## Índice
 
@@ -83,6 +83,7 @@ galway/
 │   │   │   └── audit.ts            # logAudit() -> insert audit_logs (no rompe la app si falla)
 │   │   └── services/      # capa de negocio (13 módulos)
 │   │       ├── index.ts           # ServiceCtx type, makeCtx(platform, locals, request)
+│   │       ├── shared/            # helpers compartidos: error.ts (handleDbError), audit.ts (auditLog)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
@@ -134,6 +135,7 @@ galway/
 7. **Email**: `createEmailProvider()` factory selecciona provider según env (Resend / AWS SES con firma HMAC-SHA256 Web Crypto / SMTP relay HTTP / Cloudflare `SEND_EMAIL` binding con `EmailMessage`). `services/email.ts` orquesta welcome, passwordChanged, adminAlert y `notifyLowStockForProducts` (fire-and-forget). Rate limit en memoria (Map, 10/min) para alerts.
 8. **i18n**: `src/lib/i18n/index.svelte.ts` con `$state locale` y `t(key)` (dot-path lookup sobre `en.ts`/`ja.ts`). Locale se persiste en cookie y se inicializa en `(app)/+layout.svelte`.
 9. **Security Headers** (`hooks.server.ts`): `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `Strict-Transport-Security` (solo prod). CSP nonce-mode en `svelte.config.js`.
+10. **Shared service helpers** (`src/lib/services/shared/`, PHASE-05): `handleDbError(err, entity, action, conflictMessage?)` centraliza el `catch` de las operaciones de servicios (UNIQUE → `fail(409)` con mensaje propio; resto → `console.error` + `fail(500)`). `auditLog(ctx, action, target_type, options?)` envuelve `logAudit()` infiriendo `db`/`user_id`/`user_name` desde el `ServiceCtx`. Aplicados primero en `category.ts` y `customer.ts` (TASK-018); se extienden al resto de servicios en TASK-019..023.
 
 ## Styling Convention
 
