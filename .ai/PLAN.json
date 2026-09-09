@@ -1,0 +1,1074 @@
+{
+	"project": {
+		"name": "galway",
+		"objective": "Sistema de gestión de compras (procurement): proveedores, productos, órdenes de compra, recepción, envío, inventario, clientes, reportes y administración.",
+		"status": "IN_PROGRESS"
+	},
+
+	"phases": {
+		"PHASE-01": {
+			"name": "FOUNDATION",
+			"status": "COMPLETED"
+		},
+
+		"PHASE-02": {
+			"name": "MASTER_DATA",
+			"status": "COMPLETED"
+		},
+
+		"PHASE-03": {
+			"name": "OPERATIONS",
+			"status": "COMPLETED"
+		},
+
+		"PHASE-04": {
+			"name": "ADMIN_REPORTS",
+			"status": "COMPLETED"
+		},
+
+		"PHASE-05": {
+			"name": "REMASTERING",
+			"status": "IN_PROGRESS"
+		}
+	},
+
+	"modules": {
+		"MOD-001": {
+			"name": "AUTH",
+			"phase": "PHASE-01",
+			"status": "COMPLETED",
+
+			"purpose": "Autenticación, sesiones y perfiles de usuario (roles admin/general)",
+
+			"allowed_scope": [
+				"src/lib/server/auth/**",
+				"src/routes/login/**",
+				"src/routes/logout/**",
+				"src/routes/(app)/+layout.server.ts",
+				"src/routes/(app)/profile/**",
+				"src/lib/services/account.ts",
+				"src/lib/validation/index.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**", "src/lib/server/email/**"]
+		},
+
+		"MOD-002": {
+			"name": "MASTER_SUPPLIERS",
+			"phase": "PHASE-02",
+			"status": "COMPLETED",
+
+			"purpose": "CRUD de proveedores, relación supplier-product, import/export CSV",
+
+			"allowed_scope": [
+				"src/lib/services/supplier.ts",
+				"src/routes/(app)/suppliers/**",
+				"src/lib/ui/CsvImportDialog.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/server/db/index.ts"]
+		},
+
+		"MOD-003": {
+			"name": "MASTER_PRODUCTS",
+			"phase": "PHASE-02",
+			"status": "COMPLETED",
+
+			"purpose": "CRUD de productos, creación automática de inventario, import/export CSV",
+
+			"allowed_scope": [
+				"src/lib/services/product.ts",
+				"src/routes/(app)/products/**",
+				"src/lib/ui/CsvImportDialog.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/server/db/index.ts"]
+		},
+
+		"MOD-004": {
+			"name": "MASTER_CATEGORIES",
+			"phase": "PHASE-02",
+			"status": "COMPLETED",
+
+			"purpose": "CRUD de categorías de productos (solo admin)",
+
+			"allowed_scope": [
+				"src/lib/services/category.ts",
+				"src/routes/(app)/categories/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-005": {
+			"name": "MASTER_CUSTOMERS",
+			"phase": "PHASE-02",
+			"status": "COMPLETED",
+
+			"purpose": "CRUD de clientes (ship-to)",
+
+			"allowed_scope": [
+				"src/lib/services/customer.ts",
+				"src/routes/(app)/customers/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-006": {
+			"name": "OPER_PURCHASING",
+			"phase": "PHASE-03",
+			"status": "COMPLETED",
+
+			"purpose": "Órdenes de compra: CRUD, FSM de estados, conversión a receiving",
+
+			"allowed_scope": [
+				"src/lib/services/purchasing.ts",
+				"src/routes/(app)/purchasing/**",
+				"src/lib/ui/WBSForm.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/services/receiving.ts"]
+		},
+
+		"MOD-007": {
+			"name": "OPER_RECEIVING",
+			"phase": "PHASE-03",
+			"status": "COMPLETED",
+
+			"purpose": "Remitos de recepción: CRUD, import CSV, ajuste de inventario (+)",
+
+			"allowed_scope": [
+				"src/lib/services/receiving.ts",
+				"src/routes/(app)/receiving/**",
+				"src/lib/ui/ReceivingSlipForm.svelte",
+				"src/lib/ui/SlipCsvImportDialog.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/services/inventory.ts"]
+		},
+
+		"MOD-008": {
+			"name": "OPER_SHIPPING",
+			"phase": "PHASE-03",
+			"status": "COMPLETED",
+
+			"purpose": "Remitos de envío: CRUD, import CSV, ajuste de inventario (-), impresión PDF",
+
+			"allowed_scope": [
+				"src/lib/services/shipping.ts",
+				"src/routes/(app)/shipping/**",
+				"src/lib/ui/ShippingSlipForm.svelte",
+				"src/lib/ui/SlipCsvImportDialog.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/services/inventory.ts"]
+		},
+
+		"MOD-009": {
+			"name": "OPER_INVENTORY",
+			"phase": "PHASE-03",
+			"status": "COMPLETED",
+
+			"purpose": "Inventario: listado, stocktake (overwrite), import/export CSV",
+
+			"allowed_scope": [
+				"src/lib/services/inventory.ts",
+				"src/routes/(app)/inventory/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-010": {
+			"name": "OPER_SCHEDULES",
+			"phase": "PHASE-03",
+			"status": "COMPLETED",
+
+			"purpose": "Programación de conteos físicos (stocktake schedules)",
+
+			"allowed_scope": [
+				"src/lib/services/inventory_schedule.ts",
+				"src/routes/(app)/inventory-schedules/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-011": {
+			"name": "ADMIN_ACCOUNTS",
+			"phase": "PHASE-04",
+			"status": "COMPLETED",
+
+			"purpose": "CRUD de cuentas de usuario (solo admin)",
+
+			"allowed_scope": [
+				"src/lib/services/account.ts",
+				"src/routes/(app)/accounts/**",
+				"src/lib/ui/AccountEditor.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/auth/**"]
+		},
+
+		"MOD-012": {
+			"name": "ADMIN_AUDIT",
+			"phase": "PHASE-04",
+			"status": "COMPLETED",
+
+			"purpose": "Log de auditoría de operaciones CRUD",
+
+			"allowed_scope": [
+				"src/lib/server/audit.ts",
+				"src/routes/(app)/audit-logs/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-013": {
+			"name": "ADMIN_SETTINGS",
+			"phase": "PHASE-04",
+			"status": "COMPLETED",
+
+			"purpose": "Configuración del sistema (alertas de stock, email) y test de envío",
+
+			"allowed_scope": [
+				"src/lib/services/settings.ts",
+				"src/lib/services/email.ts",
+				"src/routes/(app)/settings/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "src/lib/server/email/**"]
+		},
+
+		"MOD-014": {
+			"name": "REPORTS",
+			"phase": "PHASE-04",
+			"status": "COMPLETED",
+
+			"purpose": "Reportes: tendencias de recepción/envío, top productos, ranking de proveedores",
+
+			"allowed_scope": [
+				"src/lib/services/reports.ts",
+				"src/routes/(app)/reports/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"]
+		},
+
+		"MOD-015": {
+			"name": "I18N",
+			"phase": "PHASE-04",
+			"status": "COMPLETED",
+
+			"purpose": "Internacionalización (en/ja) basada en runes",
+
+			"allowed_scope": [
+				"src/lib/i18n/**",
+				"src/routes/(app)/+layout.svelte"
+			],
+
+			"protected_scope": []
+		},
+
+		"MOD-016": {
+			"name": "UI_COMPONENTS",
+			"phase": "PHASE-01",
+			"status": "COMPLETED",
+
+			"purpose": "Biblioteca de componentes reutilizables (Button, Table, Modal, Sidebar, etc.)",
+
+			"allowed_scope": [
+				"src/lib/ui/**",
+				"src/lib/theme.svelte.ts",
+				"src/app.scss"
+			],
+
+			"protected_scope": ["src/lib/server/**"]
+		},
+
+		"MOD-017": {
+			"name": "DB_SCHEMA",
+			"phase": "PHASE-01",
+			"status": "COMPLETED",
+
+			"purpose": "Schema Drizzle, migraciones y acceso a D1 (compartido por todos los módulos)",
+
+			"allowed_scope": [
+				"src/lib/server/db/**",
+				"drizzle/**",
+				"drizzle.config.ts",
+				"scripts/**"
+			],
+
+			"protected_scope": []
+		},
+
+		"MOD-018": {
+			"name": "SHARED_SERVICES_UTILS",
+			"phase": "PHASE-05",
+			"status": "IN_PROGRESS",
+
+			"purpose": "Extraer helpers compartidos de la capa de servicios para eliminar el código repetido (error handling, auditoría, numeración, ajuste de inventario, paginación, inserción de detalles, import CSV)",
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/product.ts",
+				"src/lib/services/category.ts",
+				"src/lib/services/customer.ts",
+				"src/lib/services/supplier.ts",
+				"src/lib/services/account.ts",
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/lib/services/inventory.ts",
+				"src/lib/services/inventory_schedule.ts",
+				"src/lib/services/settings.ts"
+			],
+
+			"protected_scope": [
+				"src/lib/server/db/**",
+				"src/lib/server/auth/**",
+				"src/lib/services/index.ts"
+			],
+
+			"dependencies": ["MOD-017"]
+		},
+
+		"MOD-019": {
+			"name": "SERVICE_ABSTRACTION",
+			"phase": "PHASE-05",
+			"status": "PENDING",
+
+			"purpose": "Llevar a la capa de servicios la lógica que hoy vive embebida en rutas (dashboard, audit-logs, login/auth, shipping print) y encapsular el ctx (permisos, user readonly, instancia DB única)",
+
+			"allowed_scope": [
+				"src/lib/services/dashboard.ts",
+				"src/lib/services/audit.ts",
+				"src/lib/services/index.ts",
+				"src/lib/server/auth/index.ts",
+				"src/routes/(app)/+page.server.ts",
+				"src/routes/(app)/audit-logs/**",
+				"src/routes/login/**",
+				"src/routes/logout/**",
+				"src/routes/(app)/shipping/[id]/print/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/**", "drizzle/**"],
+
+			"dependencies": ["MOD-018"]
+		},
+
+		"MOD-020": {
+			"name": "QUERY_OPTIMIZATION",
+			"phase": "PHASE-05",
+			"status": "PENDING",
+
+			"purpose": "Reducir consultas innecesarias: batch de ajustes de inventario (N+1), caché de settings por request, paralelización de loads, paginación faltante, limpieza de sesiones expiradas",
+
+			"allowed_scope": [
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/lib/services/inventory.ts",
+				"src/lib/services/settings.ts",
+				"src/lib/services/email.ts",
+				"src/lib/services/inventory_schedule.ts",
+				"src/routes/(app)/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts", "drizzle/**"],
+
+			"dependencies": ["MOD-018"]
+		},
+
+		"MOD-021": {
+			"name": "UI_OPTIMIZATION",
+			"phase": "PHASE-05",
+			"status": "PENDING",
+
+			"purpose": "Mejorar la carga de componentes: imports individuales de @lucide/svelte, limpiar exports muertos del barrel de UI, reducir trabajo del layout",
+
+			"allowed_scope": [
+				"src/lib/ui/**",
+				"src/lib/theme.svelte.ts",
+				"src/lib/i18n/**",
+				"src/routes/**/*.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/**"],
+
+			"dependencies": []
+		}
+	},
+
+	"tasks": {
+		"TASK-001": {
+			"module": "MOD-001",
+			"status": "COMPLETED",
+
+			"objective": "Implementar autenticación, sesiones y perfiles",
+
+			"dependencies": ["MOD-017"],
+
+			"acceptance": [
+				"Login con rate limit (5 intentos / 15 min) por IP",
+				"Password con PBKDF2-SHA256 vía Web Crypto",
+				"Sesión en cookie httpOnly con expiración de 7 días",
+				"Guard de ruta (app) redirige a /login si no hay sesión",
+				"Roles admin/general respetados en UI y server"
+			]
+		},
+
+		"TASK-002": {
+			"module": "MOD-002",
+			"status": "COMPLETED",
+
+			"objective": "Implementar gestión de proveedores",
+
+			"dependencies": ["MOD-017"],
+
+			"acceptance": [
+				"CRUD de proveedores funcional",
+				"Import/export CSV (append/replace)",
+				"Relación supplier-product registrada"
+			]
+		},
+
+		"TASK-003": {
+			"module": "MOD-003",
+			"status": "COMPLETED",
+
+			"objective": "Implementar gestión de productos",
+
+			"dependencies": ["MOD-017", "MOD-002"],
+
+			"acceptance": [
+				"CRUD de productos con código único",
+				"Al crear producto se crea inventario (cantidad 0)",
+				"Import/export CSV"
+			]
+		},
+
+		"TASK-004": {
+			"module": "MOD-004",
+			"status": "COMPLETED",
+
+			"objective": "Implementar gestión de categorías",
+
+			"dependencies": ["MOD-017"],
+
+			"acceptance": [
+				"CRUD de categorías (solo admin)",
+				"Conteo de productos por categoría"
+			]
+		},
+
+		"TASK-005": {
+			"module": "MOD-005",
+			"status": "COMPLETED",
+
+			"objective": "Implementar gestión de clientes",
+
+			"dependencies": ["MOD-017"],
+
+			"acceptance": [
+				"CRUD de clientes (ship-to)"
+			]
+		},
+
+		"TASK-006": {
+			"module": "MOD-006",
+			"status": "COMPLETED",
+
+			"objective": "Implementar órdenes de compra",
+
+			"dependencies": ["MOD-003", "MOD-002"],
+
+			"acceptance": [
+				"CRUD de PO con número PO-YYYY-NNN autogenerado",
+				"FSM: Draft → Ordered → Received/Cancelled",
+				"Conversión de PO ordered a receiving slip",
+				"Resumen de cantidades recibidas vs pedidas"
+			]
+		},
+
+		"TASK-007": {
+			"module": "MOD-007",
+			"status": "COMPLETED",
+
+			"objective": "Implementar remitos de recepción",
+
+			"dependencies": ["MOD-006", "MOD-009"],
+
+			"acceptance": [
+				"CRUD de receiving slips con número RCV-YYYY-NNN",
+				"Receiving incrementa inventario (UPSERT)",
+				"Import CSV masivo"
+			]
+		},
+
+		"TASK-008": {
+			"module": "MOD-008",
+			"status": "COMPLETED",
+
+			"objective": "Implementar remitos de envío",
+
+			"dependencies": ["MOD-005", "MOD-009"],
+
+			"acceptance": [
+				"CRUD de shipping slips con número SHP-YYYY-NNN",
+				"Shipping decrementa inventario",
+				"Impresión PDF A4 (auto-open print)",
+				"Vinculación de cliente (ship-to)"
+			]
+		},
+
+		"TASK-009": {
+			"module": "MOD-009",
+			"status": "COMPLETED",
+
+			"objective": "Implementar inventario y stocktake",
+
+			"dependencies": ["MOD-003"],
+
+			"acceptance": [
+				"Listado de stock actual por producto",
+				"Stocktake overwrite vía modal",
+				"Import/export CSV"
+			]
+		},
+
+		"TASK-010": {
+			"module": "MOD-010",
+			"status": "COMPLETED",
+
+			"objective": "Implementar programación de conteos",
+
+			"dependencies": ["MOD-009"],
+
+			"acceptance": [
+				"CRUD de schedules",
+				"FSM: Planned → In Progress → Completed"
+			]
+		},
+
+		"TASK-011": {
+			"module": "MOD-011",
+			"status": "COMPLETED",
+
+			"objective": "Implementar administración de cuentas",
+
+			"dependencies": ["MOD-001"],
+
+			"acceptance": [
+				"CRUD de cuentas (solo admin)",
+				"Roles admin/general",
+				"Bloqueo de borrado si está en uso"
+			]
+		},
+
+		"TASK-012": {
+			"module": "MOD-012",
+			"status": "COMPLETED",
+
+			"objective": "Implementar log de auditoría",
+
+			"dependencies": ["MOD-017"],
+
+			"acceptance": [
+				"Log de create/update/delete/import/stocktake/status_change/settings_save",
+				"Filtros por acción, target y usuario"
+			]
+		},
+
+		"TASK-013": {
+			"module": "MOD-013",
+			"status": "COMPLETED",
+
+			"objective": "Implementar configuración y alertas",
+
+			"dependencies": ["MOD-001", "MOD-009"],
+
+			"acceptance": [
+				"Toggle alerta de stock bajo",
+				"Email de notificación admin (en/ja)",
+				"Test de envío de email"
+			]
+		},
+
+		"TASK-014": {
+			"module": "MOD-014",
+			"status": "COMPLETED",
+
+			"objective": "Implementar reportes",
+
+			"dependencies": ["MOD-007", "MOD-008", "MOD-002"],
+
+			"acceptance": [
+				"Gráficos de barras recepción/envío (6 meses)",
+				"Top 10 productos por envío",
+				"Ranking de recepción por proveedor"
+			]
+		},
+
+		"TASK-015": {
+			"module": "MOD-015",
+			"status": "COMPLETED",
+
+			"objective": "Implementar i18n (en/ja)",
+
+			"dependencies": [],
+
+			"acceptance": [
+				"t(key) con lookup por dot-path",
+				"Diccionarios en/ja completos",
+				"Selector de locale persistente"
+			]
+		},
+
+		"TASK-016": {
+			"module": "MOD-016",
+			"status": "COMPLETED",
+
+			"objective": "Implementar design system y componentes UI",
+
+			"dependencies": [],
+
+			"acceptance": [
+				"CSS vars light/dark en app.scss",
+				"Componentes Button/Input/Table/Modal/Sidebar reutilizables",
+				"Theme switch vía runes + localStorage"
+			]
+		},
+
+		"TASK-017": {
+			"module": "MOD-017",
+			"status": "COMPLETED",
+
+			"objective": "Implementar schema Drizzle, migraciones y seed",
+
+			"dependencies": [],
+
+			"acceptance": [
+				"14+ tablas en schema.ts",
+				"Migraciones aplicables en local y remoto",
+				"Seed base y adicional (plan6)"
+			]
+		},
+
+		"TASK-018": {
+			"module": "MOD-018",
+			"status": "IN_PROGRESS",
+
+			"objective": "Crear el módulo de utilidades compartidas de servicios (src/lib/services/shared/) con handleDbError() y auditLog(ctx, ...), y aplicarlo como piloto en category.ts y customer.ts",
+
+			"dependencies": ["MOD-017"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/category.ts",
+				"src/lib/services/customer.ts"
+			],
+
+			"protected_scope": [
+				"src/lib/server/db/**",
+				"src/lib/server/auth/**",
+				"src/lib/services/index.ts"
+			],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Existe src/lib/services/shared/ con error.ts (handleDbError) y audit.ts (auditLog)",
+				"handleDbError(err, entity, action) centraliza: UNIQUE -> fail(409), otro -> console.error + fail(500)",
+				"auditLog(ctx, action, target_type, target_id?, detail?) infiere db/user_id/user_name del ctx",
+				"category.ts y customer.ts reemplazan sus bloques catch y llamadas logAudit por los helpers",
+				"El comportamiento observable no cambia (mismos códigos 409/500 y mismos mensajes)",
+				"Los tests existentes pasan y bun run check no reporta errores"
+			]
+		},
+
+		"TASK-019": {
+			"module": "MOD-018",
+			"status": "PENDING",
+
+			"objective": "Unificar la generación de números secuenciales (PO-/RCV-/SHP-YYYY-NNN) en un único helper nextSequentialNumber() y eliminar las 4 copias existentes",
+
+			"dependencies": ["TASK-018"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Un solo helper tipado reemplaza las 4 implementaciones (elimina los db: any)",
+				"Los números generados mantienen el formato PREFIX-YYYY-NNN con padStart(3,'0')",
+				"Se sigue respetando la transacción existente en la creación de PO",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-020": {
+			"module": "MOD-018",
+			"status": "PENDING",
+
+			"objective": "Unificar el ajuste de inventario en adjustInventory()/upsertInventoryAdd() y eliminar las 7 instancias duplicadas (solo cambia el signo)",
+
+			"dependencies": ["TASK-019"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/lib/services/inventory.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": true
+			},
+
+			"acceptance": [
+				"Un helper parametrizado por dirección (in/out) cubre create/update/delete de receiving y shipping",
+				"La reversa en edit/delete sigue aplicando el signo inverso correcto",
+				"El saldo de inventario tras create/update/delete es idéntico al anterior",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-021": {
+			"module": "MOD-018",
+			"status": "PENDING",
+
+			"objective": "Unificar la paginación y el count paralelo de las 7 funciones list* en un helper compartido",
+
+			"dependencies": ["TASK-018"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/product.ts",
+				"src/lib/services/supplier.ts",
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/lib/services/inventory.ts",
+				"src/lib/services/account.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Helper devuelve { rows, totalItems, itemsPerPage, currentPage }",
+				"Se mantiene itemsPerPage=20 (30 en accounts) y currentPage mínimo 1",
+				"Las 7 list* devuelven el mismo shape que hoy",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-022": {
+			"module": "MOD-018",
+			"status": "PENDING",
+
+			"objective": "Unificar validateLineItems(), insertDetails() y tryCleanup() para eliminar las 27 instancias repetidas de inserción de detalles y rollback de la fila padre",
+
+			"dependencies": ["TASK-020"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/purchasing.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"validateLineItems() devuelve fail(400) cuando no hay al menos una línea válida",
+				"insertDetails() respeta line_no correlativo (i+1) y la FK del padre",
+				"tryCleanup() borra la fila padre si fallan los hijos, sin lanzar",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-023": {
+			"module": "MOD-018",
+			"status": "PENDING",
+
+			"objective": "Unificar los 5 imports CSV en un framework genérico de importación (parse + validación de headers + append/replace + auditoría)",
+
+			"dependencies": ["TASK-022"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/product.ts",
+				"src/lib/services/supplier.ts",
+				"src/lib/services/inventory.ts",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts"
+			],
+
+			"protected_scope": ["src/lib/utils/csv.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Los 5 imports conservan sus mensajes de error y modo append/replace",
+				"Importar el mismo CSV produce el mismo resultado que antes",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-024": {
+			"module": "MOD-019",
+			"status": "PENDING",
+
+			"objective": "Extraer la lógica del dashboard a src/lib/services/dashboard.ts (hoy 8 queries Drizzle inline en la ruta)",
+
+			"dependencies": ["TASK-021"],
+
+			"allowed_scope": [
+				"src/lib/services/dashboard.ts",
+				"src/routes/(app)/+page.server.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"loadDashboard(ctx) encapsula las 8 queries (stats, low stock, today receiving/shipping)",
+				"La ruta solo parsea parámetros, llama al servicio y retorna",
+				"Los datos mostrados en el dashboard son idénticos",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-025": {
+			"module": "MOD-019",
+			"status": "PENDING",
+
+			"objective": "Extraer la lectura de audit logs a un servicio con paginación y filtros, y dejar de hacer select() (trae el JSON detail) en la ruta",
+
+			"dependencies": ["TASK-021"],
+
+			"allowed_scope": [
+				"src/lib/services/audit.ts",
+				"src/routes/(app)/audit-logs/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"listAuditLogs(ctx, filters) con paginación y filtros action/target/user",
+				"La query selecciona columnas explícitas en vez de select()",
+				"La vista de audit-logs muestra los mismos datos",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-026": {
+			"module": "MOD-019",
+			"status": "PENDING",
+
+			"objective": "Extraer rate limit + autenticación del login a un servicio, y centralizar requireAdmin() y la instancia de DB (hoy 4 drizzle() ad-hoc en auth)",
+
+			"dependencies": ["TASK-018"],
+
+			"allowed_scope": [
+				"src/lib/services/index.ts",
+				"src/lib/server/auth/index.ts",
+				"src/routes/login/**",
+				"src/routes/logout/**",
+				"src/lib/services/category.ts",
+				"src/lib/services/account.ts",
+				"src/lib/services/settings.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**", "drizzle/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": true
+			},
+
+			"acceptance": [
+				"checkRateLimit/recordFailedAttempt/resetRateLimit viven en el servicio de auth",
+				"requireAdmin(ctx) reemplaza los 6 checks manuales e inconsistentes de rol",
+				"Una única instancia de DB por request (reutilizada por auth y servicios)",
+				"Login, logout y los accesos admin se comportan igual",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-027": {
+			"module": "MOD-020",
+			"status": "PENDING",
+
+			"objective": "Eliminar el N+1 en los ajustes de inventario de receiving/shipping/purchasing (hoy 15-25 queries por operación) usando db.batch() o un UPDATE con CASE WHEN",
+
+			"dependencies": ["TASK-020"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/lib/services/purchasing.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Crear/editar/borrar un slip ejecuta una cantidad constante de queries, no una por línea",
+				"El saldo final de inventario es idéntico",
+				"Se verifica en dev con wrangler ( logs) que bajó el número de queries",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-028": {
+			"module": "MOD-020",
+			"status": "PENDING",
+
+			"objective": "Cachear settings por request en el ctx para eliminar las 3-4 consultas repetidas a la tabla settings (sendAdminAlert, getEmailLocale, dashboard)",
+
+			"dependencies": ["TASK-026"],
+
+			"allowed_scope": [
+				"src/lib/services/index.ts",
+				"src/lib/services/settings.ts",
+				"src/lib/services/email.ts",
+				"src/lib/services/inventory_schedule.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/schema.ts"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": true
+			},
+
+			"acceptance": [
+				"getSettings(ctx) consulta settings una sola vez por request (lazy + memoizado en ctx)",
+				"getEmailLocale deja de estar duplicada en email.ts e inventory_schedule.ts",
+				"Las alertas por stock bajo siguen enviándose con el mismo locale y destinatario",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-029": {
+			"module": "MOD-020",
+			"status": "PENDING",
+
+			"objective": "Paralelizar loads secuenciales y crear funciones getXFormData dedicadas (hoy receiving/new y shipping/new cargan listas completas para usar 2 de 4 resultados)",
+
+			"dependencies": ["TASK-024"],
+
+			"allowed_scope": [
+				"src/lib/services/receiving.ts",
+				"src/lib/services/shipping.ts",
+				"src/routes/(app)/receiving/new/**",
+				"src/routes/(app)/shipping/new/**",
+				"src/routes/(app)/inventory-schedules/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"receiving/new y shipping/new cargan solo suppliers/products/accounts/customers que usan",
+				"Los awaits secuenciales de getXForEdit se resuelven con Promise.all",
+				"Los formularios muestran las mismas opciones",
+				"Los tests existentes pasan"
+			]
+		},
+
+		"TASK-030": {
+			"module": "MOD-021",
+			"status": "PENDING",
+
+			"objective": "Optimizar la carga de UI: imports individuales de @lucide/svelte y eliminar los exports muertos del barrel de UI (WBSForm, ProfileEditor)",
+
+			"dependencies": [],
+
+			"allowed_scope": [
+				"src/lib/ui/**",
+				"src/routes/**/*.svelte"
+			],
+
+			"protected_scope": ["src/lib/server/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"Los ~32 imports de iconos usan @lucide/svelte/icons/<nombre> en vez del barrel",
+				"Ningún componente sigue importando WBSForm ni ProfileEditor; se decide si se eliminan o se documentan",
+				"Todos los iconos siguen renderizándose igual en todas las páginas",
+				"El build de producción no aumenta de tamaño"
+			]
+		}
+	}
+}

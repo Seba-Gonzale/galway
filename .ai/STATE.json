@@ -1,0 +1,18 @@
+{
+	"project_status": "IN_PROGRESS",
+
+	"current": {
+		"task": "TASK-018",
+		"status": "IN_PROGRESS",
+		"note": "Remasterización (PHASE-05). Primera tarea: crear src/lib/services/shared/ con handleDbError() y auditLog(ctx, ...) y aplicarlos como piloto en category.ts y customer.ts. Es la base de MOD-018; el resto de tareas de modularización dependen de este helper."
+	},
+
+	"last_completed": {
+		"task": "TASK-017",
+		"at": "2026-09-08T20:56:13-03:00"
+	},
+
+	"next_action": "Crear src/lib/services/shared/error.ts (handleDbError) y src/lib/services/shared/audit.ts (auditLog), luego reemplazar los catch/fail y logAudit en category.ts y customer.ts",
+
+	"updated_at": "2026-09-09T07:25:00-03:00"
+}
