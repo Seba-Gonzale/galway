@@ -1,5 +1,5 @@
 import { error, redirect, fail } from '@sveltejs/kit';
-import { eq, desc, count, asc, and } from 'drizzle-orm';
+import { eq, desc, count, asc } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
