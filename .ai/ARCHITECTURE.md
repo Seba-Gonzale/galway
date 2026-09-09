@@ -1,4 +1,4 @@
-> **Último commit:** `275ae5f` — `refactor: extract shared service helpers (handleDbError, auditLog) and apply to category and customer`
+> **Último commit:** `62c6d51` — `refactor: unify slip/order numbering into nextSequentialNumber helper`
 
 ## Índice
 
@@ -83,7 +83,8 @@ galway/
 │   │   │   └── audit.ts            # logAudit() -> insert audit_logs (no rompe la app si falla)
 │   │   └── services/      # capa de negocio (13 módulos)
 │   │       ├── index.ts           # ServiceCtx type, makeCtx(platform, locals, request)
-│   │       ├── shared/            # helpers compartidos: error.ts (handleDbError), audit.ts (auditLog)
+│   │       ├── shared/            # helpers compartidos: error.ts (handleDbError), audit.ts (auditLog),
+│   │       │                      #   numbering.ts (nextSequentialNumber: PO-/RCV-/SHP-YYYY-NNN)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
