@@ -92,10 +92,7 @@
 
 			"purpose": "CRUD de categorías de productos (solo admin)",
 
-			"allowed_scope": [
-				"src/lib/services/category.ts",
-				"src/routes/(app)/categories/**"
-			],
+			"allowed_scope": ["src/lib/services/category.ts", "src/routes/(app)/categories/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"]
 		},
@@ -107,10 +104,7 @@
 
 			"purpose": "CRUD de clientes (ship-to)",
 
-			"allowed_scope": [
-				"src/lib/services/customer.ts",
-				"src/routes/(app)/customers/**"
-			],
+			"allowed_scope": ["src/lib/services/customer.ts", "src/routes/(app)/customers/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"]
 		},
@@ -172,10 +166,7 @@
 
 			"purpose": "Inventario: listado, stocktake (overwrite), import/export CSV",
 
-			"allowed_scope": [
-				"src/lib/services/inventory.ts",
-				"src/routes/(app)/inventory/**"
-			],
+			"allowed_scope": ["src/lib/services/inventory.ts", "src/routes/(app)/inventory/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"]
 		},
@@ -218,10 +209,7 @@
 
 			"purpose": "Log de auditoría de operaciones CRUD",
 
-			"allowed_scope": [
-				"src/lib/server/audit.ts",
-				"src/routes/(app)/audit-logs/**"
-			],
+			"allowed_scope": ["src/lib/server/audit.ts", "src/routes/(app)/audit-logs/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"]
 		},
@@ -249,10 +237,7 @@
 
 			"purpose": "Reportes: tendencias de recepción/envío, top productos, ranking de proveedores",
 
-			"allowed_scope": [
-				"src/lib/services/reports.ts",
-				"src/routes/(app)/reports/**"
-			],
+			"allowed_scope": ["src/lib/services/reports.ts", "src/routes/(app)/reports/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"]
 		},
@@ -264,10 +249,7 @@
 
 			"purpose": "Internacionalización (en/ja) basada en runes",
 
-			"allowed_scope": [
-				"src/lib/i18n/**",
-				"src/routes/(app)/+layout.svelte"
-			],
+			"allowed_scope": ["src/lib/i18n/**", "src/routes/(app)/+layout.svelte"],
 
 			"protected_scope": []
 		},
@@ -279,11 +261,7 @@
 
 			"purpose": "Biblioteca de componentes reutilizables (Button, Table, Modal, Sidebar, etc.)",
 
-			"allowed_scope": [
-				"src/lib/ui/**",
-				"src/lib/theme.svelte.ts",
-				"src/app.scss"
-			],
+			"allowed_scope": ["src/lib/ui/**", "src/lib/theme.svelte.ts", "src/app.scss"],
 
 			"protected_scope": ["src/lib/server/**"]
 		},
@@ -295,12 +273,7 @@
 
 			"purpose": "Schema Drizzle, migraciones y acceso a D1 (compartido por todos los módulos)",
 
-			"allowed_scope": [
-				"src/lib/server/db/**",
-				"drizzle/**",
-				"drizzle.config.ts",
-				"scripts/**"
-			],
+			"allowed_scope": ["src/lib/server/db/**", "drizzle/**", "drizzle.config.ts", "scripts/**"],
 
 			"protected_scope": []
 		},
@@ -459,10 +432,7 @@
 
 			"dependencies": ["MOD-017"],
 
-			"acceptance": [
-				"CRUD de categorías (solo admin)",
-				"Conteo de productos por categoría"
-			]
+			"acceptance": ["CRUD de categorías (solo admin)", "Conteo de productos por categoría"]
 		},
 
 		"TASK-005": {
@@ -473,9 +443,7 @@
 
 			"dependencies": ["MOD-017"],
 
-			"acceptance": [
-				"CRUD de clientes (ship-to)"
-			]
+			"acceptance": ["CRUD de clientes (ship-to)"]
 		},
 
 		"TASK-006": {
@@ -548,10 +516,7 @@
 
 			"dependencies": ["MOD-009"],
 
-			"acceptance": [
-				"CRUD de schedules",
-				"FSM: Planned → In Progress → Completed"
-			]
+			"acceptance": ["CRUD de schedules", "FSM: Planned → In Progress → Completed"]
 		},
 
 		"TASK-011": {
@@ -863,10 +828,7 @@
 
 			"dependencies": ["TASK-021"],
 
-			"allowed_scope": [
-				"src/lib/services/dashboard.ts",
-				"src/routes/(app)/+page.server.ts"
-			],
+			"allowed_scope": ["src/lib/services/dashboard.ts", "src/routes/(app)/+page.server.ts"],
 
 			"protected_scope": ["src/lib/server/db/**"],
 
@@ -892,10 +854,7 @@
 
 			"dependencies": ["TASK-021"],
 
-			"allowed_scope": [
-				"src/lib/services/audit.ts",
-				"src/routes/(app)/audit-logs/**"
-			],
+			"allowed_scope": ["src/lib/services/audit.ts", "src/routes/(app)/audit-logs/**"],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"],
 
@@ -1050,10 +1009,7 @@
 
 			"dependencies": [],
 
-			"allowed_scope": [
-				"src/lib/ui/**",
-				"src/routes/**/*.svelte"
-			],
+			"allowed_scope": ["src/lib/ui/**", "src/routes/**/*.svelte"],
 
 			"protected_scope": ["src/lib/server/**"],
 
