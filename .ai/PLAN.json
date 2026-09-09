@@ -696,7 +696,7 @@
 
 		"TASK-019": {
 			"module": "MOD-018",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Unificar la generación de números secuenciales (PO-/RCV-/SHP-YYYY-NNN) en un único helper nextSequentialNumber() y eliminar las 4 copias existentes",
 

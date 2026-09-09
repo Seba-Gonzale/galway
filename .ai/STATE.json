@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-019",
+		"task": "TASK-020",
 		"status": "ON_HOLD",
-		"note": "Siguiente paso de MOD-018: unificar la generación de números secuenciales (PO-/RCV-/SHP-YYYY-NNN) en nextSequentialNumber(), eliminando las 4 copias existentes. Esperando confirmación porque toca purchasing.ts, receiving.ts y shipping.ts (lógica de numeración y transacción de PO)."
+		"note": "Siguiente paso de MOD-018: unificar el ajuste de inventario en adjustInventory()/upsertInventoryAdd(), eliminando las 7 instancias duplicadas (solo cambia el signo). Esperando confirmación porque tiene impact.other_modules=true: toca create/update/delete de receiving.ts, shipping.ts, purchasing.ts e inventory.ts, y un error de signo alteraría el stock."
 	},
 
 	"last_completed": {
-		"task": "TASK-018",
-		"at": "2026-09-09T20:14:24-03:00"
+		"task": "TASK-019",
+		"at": "2026-09-09T20:27:54-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-019: crear nextSequentialNumber() en src/lib/services/shared/ y reemplazar las 4 implementaciones duplicadas",
+	"next_action": "Confirmar e implementar TASK-020: crear adjustInventory()/upsertInventoryAdd() en src/lib/services/shared/ y reemplazar las 7 instancias de ajuste de inventario",
 
-	"updated_at": "2026-09-09T20:14:24-03:00"
+	"updated_at": "2026-09-09T20:27:54-03:00"
 }

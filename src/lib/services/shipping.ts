@@ -5,6 +5,7 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
+import { nextSequentialNumber } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -153,7 +154,13 @@ export async function createShippingSlip(ctx: ServiceCtx, data: {
 	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
 	if (validDetails.length === 0) return fail(400, { error: 'At least one valid line item is required' });
 
-	const slip_number = await nextShippingSlipNumber(ctx.db, data.shipped_at);
+	const slip_number = await nextSequentialNumber(
+		ctx.db,
+		schema.shippingSlips,
+		schema.shippingSlips.slip_number,
+		'SHP',
+		data.shipped_at
+	);
 	const now = new Date().toISOString();
 	let slipId: string | null = null;
 	try {
@@ -268,7 +275,13 @@ export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date
 
 	if (detailRecords.length === 0) return fail(400, { error: 'No valid data found' });
 
-	const slip_number = await nextShippingSlipNumber(ctx.db, date);
+	const slip_number = await nextSequentialNumber(
+		ctx.db,
+		schema.shippingSlips,
+		schema.shippingSlips.slip_number,
+		'SHP',
+		date
+	);
 	const now = new Date().toISOString();
 	let slipId: string | null = null;
 	try {
@@ -292,19 +305,6 @@ export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date
 		console.error('Failed to import shipping slips:', err);
 		return fail(500, { error: 'Failed to import shipping slips' });
 	}
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function nextShippingSlipNumber(db: any, date: string) {
-	const year = new Date(date).getFullYear();
-	const [last] = await db
-		.select({ n: schema.shippingSlips.slip_number })
-		.from(schema.shippingSlips)
-		.where(like(schema.shippingSlips.slip_number, `SHP-${year}-%`))
-		.orderBy(desc(schema.shippingSlips.slip_number))
-		.limit(1);
-	const lastNum = last ? parseInt(last.n.split('-')[2], 10) : 0;
-	return `SHP-${year}-${String(lastNum + 1).padStart(3, '0')}`;
 }
 
 function isSlipNumberConflict(err: unknown): boolean {

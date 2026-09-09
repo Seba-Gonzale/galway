@@ -1,8 +1,9 @@
 import { error, redirect, fail } from '@sveltejs/kit';
-import { eq, desc, count, like, asc, and } from 'drizzle-orm';
+import { eq, desc, count, asc, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
+import { nextSequentialNumber } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1) {
@@ -159,15 +160,13 @@ export async function createPurchaseOrder(ctx: ServiceCtx, data: {
 	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
 	if (validDetails.length === 0) return fail(400, { error: 'At least one valid line item is required' });
 
-	const year = new Date(data.ordered_at).getFullYear();
-	const [last] = await ctx.db
-		.select({ n: schema.purchaseOrders.order_number })
-		.from(schema.purchaseOrders)
-		.where(like(schema.purchaseOrders.order_number, `PO-${year}-%`))
-		.orderBy(desc(schema.purchaseOrders.order_number))
-		.limit(1);
-	const lastNum = last ? parseInt(last.n.split('-')[2], 10) : 0;
-	const order_number = `PO-${year}-${String(lastNum + 1).padStart(3, '0')}`;
+	const order_number = await nextSequentialNumber(
+		ctx.db,
+		schema.purchaseOrders,
+		schema.purchaseOrders.order_number,
+		'PO',
+		data.ordered_at
+	);
 
 	let newId = '';
 	try {
@@ -271,15 +270,13 @@ export async function convertToReceivingSlip(
 	if (validDetails.length === 0) return fail(400, { error: 'At least one line item with quantity > 0 is required' });
 
 	const now = new Date().toISOString();
-	const slipYear = new Date(data.received_at).getFullYear();
-	const [lastSlip] = await ctx.db
-		.select({ n: schema.receivingSlips.slip_number })
-		.from(schema.receivingSlips)
-		.where(like(schema.receivingSlips.slip_number, `RCV-${slipYear}-%`))
-		.orderBy(desc(schema.receivingSlips.slip_number))
-		.limit(1);
-	const lastSlipNum = lastSlip ? parseInt(lastSlip.n.split('-')[2], 10) : 0;
-	const slip_number = `RCV-${slipYear}-${String(lastSlipNum + 1).padStart(3, '0')}`;
+	const slip_number = await nextSequentialNumber(
+		ctx.db,
+		schema.receivingSlips,
+		schema.receivingSlips.slip_number,
+		'RCV',
+		data.received_at
+	);
 
 	let newSlipId = '';
 	try {

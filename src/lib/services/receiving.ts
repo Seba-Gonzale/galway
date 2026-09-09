@@ -5,6 +5,7 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
+import { nextSequentialNumber } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -161,7 +162,13 @@ export async function createReceivingSlip(ctx: ServiceCtx, data: {
 	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
 	if (validDetails.length === 0) return fail(400, { error: 'At least one valid line item is required' });
 
-	const slip_number = await nextReceivingSlipNumber(ctx.db, data.received_at);
+	const slip_number = await nextSequentialNumber(
+		ctx.db,
+		schema.receivingSlips,
+		schema.receivingSlips.slip_number,
+		'RCV',
+		data.received_at
+	);
 	const now = new Date().toISOString();
 	let slipId: string | null = null;
 	try {
@@ -282,7 +289,13 @@ export async function importReceivingSlips(ctx: ServiceCtx, csvText: string, dat
 
 	if (detailRecords.length === 0) return fail(400, { error: 'No valid data found' });
 
-	const slip_number = await nextReceivingSlipNumber(ctx.db, date);
+	const slip_number = await nextSequentialNumber(
+		ctx.db,
+		schema.receivingSlips,
+		schema.receivingSlips.slip_number,
+		'RCV',
+		date
+	);
 	const now = new Date().toISOString();
 	let slipId: string | null = null;
 	try {
@@ -307,19 +320,6 @@ export async function importReceivingSlips(ctx: ServiceCtx, csvText: string, dat
 		console.error('Failed to import receiving slips:', err);
 		return fail(500, { error: 'Failed to import receiving slips' });
 	}
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function nextReceivingSlipNumber(db: any, date: string) {
-	const year = new Date(date).getFullYear();
-	const [last] = await db
-		.select({ n: schema.receivingSlips.slip_number })
-		.from(schema.receivingSlips)
-		.where(like(schema.receivingSlips.slip_number, `RCV-${year}-%`))
-		.orderBy(desc(schema.receivingSlips.slip_number))
-		.limit(1);
-	const lastNum = last ? parseInt(last.n.split('-')[2], 10) : 0;
-	return `RCV-${year}-${String(lastNum + 1).padStart(3, '0')}`;
 }
 
 function isSlipNumberConflict(err: unknown): boolean {
