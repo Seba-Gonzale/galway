@@ -660,7 +660,7 @@
 
 		"TASK-018": {
 			"module": "MOD-018",
-			"status": "IN_PROGRESS",
+			"status": "COMPLETED",
 
 			"objective": "Crear el módulo de utilidades compartidas de servicios (src/lib/services/shared/) con handleDbError() y auditLog(ctx, ...), y aplicarlo como piloto en category.ts y customer.ts",
 

@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-018",
-		"status": "IN_PROGRESS",
-		"note": "Remasterización (PHASE-05). Primera tarea: crear src/lib/services/shared/ con handleDbError() y auditLog(ctx, ...) y aplicarlos como piloto en category.ts y customer.ts. Es la base de MOD-018; el resto de tareas de modularización dependen de este helper."
+		"task": "TASK-019",
+		"status": "ON_HOLD",
+		"note": "Siguiente paso de MOD-018: unificar la generación de números secuenciales (PO-/RCV-/SHP-YYYY-NNN) en nextSequentialNumber(), eliminando las 4 copias existentes. Esperando confirmación porque toca purchasing.ts, receiving.ts y shipping.ts (lógica de numeración y transacción de PO)."
 	},
 
 	"last_completed": {
-		"task": "TASK-017",
-		"at": "2026-09-08T20:56:13-03:00"
+		"task": "TASK-018",
+		"at": "2026-09-09T20:14:24-03:00"
 	},
 
-	"next_action": "Crear src/lib/services/shared/error.ts (handleDbError) y src/lib/services/shared/audit.ts (auditLog), luego reemplazar los catch/fail y logAudit en category.ts y customer.ts",
+	"next_action": "Confirmar e implementar TASK-019: crear nextSequentialNumber() en src/lib/services/shared/ y reemplazar las 4 implementaciones duplicadas",
 
-	"updated_at": "2026-09-09T07:25:00-03:00"
+	"updated_at": "2026-09-09T20:14:24-03:00"
 }
