@@ -1,4 +1,4 @@
-> **Último commit:** `7fff7e0` — `refactor: unify line item validation, detail insert and parent rollback helpers`
+> **Último commit:** `760a4dd` — `refactor: unify CSV imports into a shared import framework`
 
 ## Índice
 
@@ -87,7 +87,8 @@ galway/
 │   │       │                      #   numbering.ts (nextSequentialNumber: PO-/RCV-/SHP-YYYY-NNN),
 │   │       │                      #   inventory.ts (upsertInventoryDelta / adjustInventory),
 │   │       │                      #   pagination.ts (paginate: count + rows + extra en paralelo),
-│   │       │                      #   details.ts (validateLineItems / insertDetails / tryCleanup)
+│   │       │                      #   details.ts (validateLineItems / insertDetails / tryCleanup),
+│   │       │                      #   import.ts (parseImportCsv / requireRecords / productCodeMap / mapProductQuantities)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
@@ -149,6 +150,11 @@ galway/
     - `validateLineItems(details, errorMessage?)` — filtra `product_id && quantity > 0` y devuelve `fail(400)` si no queda ninguna (mensaje por defecto `'At least one valid line item is required'`; `convertToReceivingSlip` pasa el suyo propio). El call site hace `if (!Array.isArray(validDetails)) return validDetails;`.
     - `insertDetails(items, insertRow)` — reemplaza el bucle de inserción y asigna el `line_no` correlativo (`i + 1`); la FK del padre (`order_id` / `slip_id`) la arma el call site en `insertRow`, así no se pierde el tipado de Drizzle.
     - `tryCleanup(id, remove)` — rollback best-effort de la fila padre cuando fallaron los hijos: no hace nada si el id está vacío y **nunca lanza**, para no enmascarar el error original (409 por número duplicado incluido).
+14. **Imports CSV** (`src/lib/services/shared/import.ts`, TASK-023): framework común de los 5 imports (`product`, `supplier`, `inventory`, `receiving`, `shipping`). **No** toca `src/lib/utils/csv.ts` (protected): solo lo usa.
+    - `parseImportCsv(csvText, columns, mode?)` — valida el modo (`append`/`replace`), exige header + al menos una fila (`'CSV has no data (requires a header row plus at least one data row)'`) y resuelve los índices por `key`, devolviendo `fail(400)` con el mensaje de cada columna (`CSV must include a "X" column`, o el `missingMessage` propio — `importInventory` acepta `Quantity` **o** `Stock`). Las columnas opcionales quedan en `-1`. Call site: `if (!('dataRows' in parsed)) return parsed;`.
+    - `requireRecords(records, message?)` — `fail(400) 'No valid data found'` si el lote quedó vacío.
+    - `productCodeMap(db)` — `Map<code, id>` de todos los productos.
+    - `mapProductQuantities(dataRows, index, productMap, { allowZero })` — arma las líneas `{ product_id, quantity }` descartando códigos inexistentes y cantidades inválidas; `allowZero: true` solo en `importInventory` (acepta 0), receiving/shipping exigen `> 0`.
 
 ## Styling Convention
 
