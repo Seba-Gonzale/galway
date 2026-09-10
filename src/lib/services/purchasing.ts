@@ -18,7 +18,12 @@ export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1)
 		? eq(schema.purchaseOrders.status, status as 'draft' | 'ordered' | 'received' | 'cancelled')
 		: undefined;
 
-	const { rows: orders, ...pagination } = await paginate({
+	const {
+		rows: orders,
+		totalItems,
+		itemsPerPage,
+		currentPage
+	} = await paginate({
 		page,
 		count: () => ctx.db.select({ count: count() }).from(schema.purchaseOrders).where(whereClause),
 		rows: (limit, offset) =>
@@ -49,7 +54,9 @@ export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1)
 
 	return {
 		orders,
-		...pagination,
+		totalItems,
+		itemsPerPage,
+		currentPage,
 		statusFilter: status
 	};
 }

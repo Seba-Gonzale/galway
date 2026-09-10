@@ -848,7 +848,7 @@
 
 		"TASK-025": {
 			"module": "MOD-019",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Extraer la lectura de audit logs a un servicio con paginación y filtros, y dejar de hacer select() (trae el JSON detail) en la ruta",
 

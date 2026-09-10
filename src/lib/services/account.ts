@@ -19,7 +19,12 @@ export async function listAccounts(ctx: ServiceCtx, search: string, page: number
 		? or(like(schema.accounts.name, `%${search}%`), like(schema.accounts.email, `%${search}%`))
 		: undefined;
 
-	const { rows: accounts, ...pagination } = await paginate({
+	const {
+		rows: accounts,
+		totalItems,
+		itemsPerPage,
+		currentPage
+	} = await paginate({
 		page,
 		itemsPerPage: 30,
 		count: () => ctx.db.select({ count: count() }).from(schema.accounts).where(whereClause),
@@ -41,7 +46,9 @@ export async function listAccounts(ctx: ServiceCtx, search: string, page: number
 			created_at: a.created_at
 		})),
 		currentUserId: ctx.user.id,
-		...pagination,
+		totalItems,
+		itemsPerPage,
+		currentPage,
 		searchQuery: search
 	};
 }

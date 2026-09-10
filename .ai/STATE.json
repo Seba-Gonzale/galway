@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-025",
+		"task": "TASK-026",
 		"status": "ON_HOLD",
-		"note": "Siguiente de MOD-019 por orden: TASK-025, extraer la lectura de audit logs a src/lib/services/audit.ts con paginación y filtros (action/target/user) y dejar de usar select() en la ruta (trae el JSON detail). Depende de TASK-021 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/server/db/schema.ts. Esperando confirmación para proceder."
+		"note": "Última tarea de MOD-019: extraer rate limit + autenticación del login a un servicio y centralizar requireAdmin() y la instancia de DB (hoy 4 drizzle() ad-hoc en auth). Depende de TASK-018 (cumplida), pero tiene impact.other_modules=true y toca src/lib/server/auth/index.ts, src/routes/login/** y src/routes/logout/**, por lo que requiere revisión cuidadosa del flujo de login/sesiones. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-024",
-		"at": "2026-09-10T17:31:00-03:00"
+		"task": "TASK-025",
+		"at": "2026-09-10T17:48:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-025: listAuditLogs(ctx, filters) en src/lib/services/audit.ts y que src/routes/(app)/audit-logs/+page.server.ts solo parsee parámetros y llame al servicio",
+	"next_action": "Confirmar e implementar TASK-026: servicio de auth con checkRateLimit/recordFailedAttempt/resetRateLimit, requireAdmin(ctx) y una única instancia de DB por request",
 
-	"updated_at": "2026-09-10T17:31:00-03:00"
+	"updated_at": "2026-09-10T17:48:00-03:00"
 }
