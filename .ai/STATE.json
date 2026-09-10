@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-020",
+		"task": "TASK-021",
 		"status": "ON_HOLD",
-		"note": "Siguiente paso de MOD-018: unificar el ajuste de inventario en adjustInventory()/upsertInventoryAdd(), eliminando las 7 instancias duplicadas (solo cambia el signo). Esperando confirmación porque tiene impact.other_modules=true: toca create/update/delete de receiving.ts, shipping.ts, purchasing.ts e inventory.ts, y un error de signo alteraría el stock."
+		"note": "Siguiente paso de MOD-018: unificar la paginación y el count paralelo de las 7 funciones list* (product, supplier, purchasing, receiving, shipping, inventory, account) en un helper compartido. Depende de TASK-018 (cumplida) y tiene impact.other_modules=false, por lo que es de bajo riesgo. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-019",
-		"at": "2026-09-09T20:27:54-03:00"
+		"task": "TASK-020",
+		"at": "2026-09-09T22:02:45-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-020: crear adjustInventory()/upsertInventoryAdd() en src/lib/services/shared/ y reemplazar las 7 instancias de ajuste de inventario",
+	"next_action": "Confirmar e implementar TASK-021: crear helper de paginación en src/lib/services/shared/ y reemplazar el boilerplate de las 7 funciones list*",
 
-	"updated_at": "2026-09-09T20:27:54-03:00"
+	"updated_at": "2026-09-09T22:02:45-03:00"
 }

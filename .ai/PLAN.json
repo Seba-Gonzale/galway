@@ -692,7 +692,7 @@
 
 		"TASK-020": {
 			"module": "MOD-018",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Unificar el ajuste de inventario en adjustInventory()/upsertInventoryAdd() y eliminar las 7 instancias duplicadas (solo cambia el signo)",
 

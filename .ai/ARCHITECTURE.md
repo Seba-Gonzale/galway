@@ -1,4 +1,4 @@
-> **Último commit:** `62c6d51` — `refactor: unify slip/order numbering into nextSequentialNumber helper`
+> **Último commit:** `7f6dc69` — `refactor: unify inventory adjustments into upsertInventoryDelta/adjustInventory helpers`
 
 ## Índice
 
@@ -84,7 +84,8 @@ galway/
 │   │   └── services/      # capa de negocio (13 módulos)
 │   │       ├── index.ts           # ServiceCtx type, makeCtx(platform, locals, request)
 │   │       ├── shared/            # helpers compartidos: error.ts (handleDbError), audit.ts (auditLog),
-│   │       │                      #   numbering.ts (nextSequentialNumber: PO-/RCV-/SHP-YYYY-NNN)
+│   │       │                      #   numbering.ts (nextSequentialNumber: PO-/RCV-/SHP-YYYY-NNN),
+│   │       │                      #   inventory.ts (upsertInventoryDelta / adjustInventory)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
@@ -136,7 +137,11 @@ galway/
 7. **Email**: `createEmailProvider()` factory selecciona provider según env (Resend / AWS SES con firma HMAC-SHA256 Web Crypto / SMTP relay HTTP / Cloudflare `SEND_EMAIL` binding con `EmailMessage`). `services/email.ts` orquesta welcome, passwordChanged, adminAlert y `notifyLowStockForProducts` (fire-and-forget). Rate limit en memoria (Map, 10/min) para alerts.
 8. **i18n**: `src/lib/i18n/index.svelte.ts` con `$state locale` y `t(key)` (dot-path lookup sobre `en.ts`/`ja.ts`). Locale se persiste en cookie y se inicializa en `(app)/+layout.svelte`.
 9. **Security Headers** (`hooks.server.ts`): `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `Strict-Transport-Security` (solo prod). CSP nonce-mode en `svelte.config.js`.
-10. **Shared service helpers** (`src/lib/services/shared/`, PHASE-05): `handleDbError(err, entity, action, conflictMessage?)` centraliza el `catch` de las operaciones de servicios (UNIQUE → `fail(409)` con mensaje propio; resto → `console.error` + `fail(500)`). `auditLog(ctx, action, target_type, options?)` envuelve `logAudit()` infiriendo `db`/`user_id`/`user_name` desde el `ServiceCtx`. Aplicados primero en `category.ts` y `customer.ts` (TASK-018); se extienden al resto de servicios en TASK-019..023.
+10. **Shared service helpers** (`src/lib/services/shared/`, PHASE-05): `handleDbError(err, entity, action, conflictMessage?)` centraliza el `catch` de las operaciones de servicios (UNIQUE → `fail(409)` con mensaje propio; resto → `console.error` + `fail(500)`). `auditLog(ctx, action, target_type, options?)` envuelve `logAudit()` infiriendo `db`/`user_id`/`user_name` desde el `ServiceCtx`. `nextSequentialNumber(db, table, column, prefix, date)` genera `PREFIX-YYYY-NNN` (PO/RCV/SHP). Aplicados primero en `category.ts` y `customer.ts` (TASK-018); se extienden al resto de servicios en TASK-019..023.
+11. **Ajuste de inventario** (`src/lib/services/shared/inventory.ts`, TASK-020): existen **dos** helpers con semántica distinta, deliberadamente NO unificados porque el código original usaba dos estrategias SQL diferentes:
+    - `upsertInventoryDelta(db, items, sign, now)` — `INSERT ... ON CONFLICT DO UPDATE`: crea la fila de `inventory` si el producto no tenía una. La usan las operaciones que **suman** stock y históricamente creaban la fila: `createReceivingSlip`, la parte "aplicar" de `updateReceivingSlip`, `importReceivingSlips` y `convertToReceivingSlip`.
+    - `adjustInventory(db, items, sign, now)` — `UPDATE` simple: **no hace nada** si la fila no existe. La usan shipping (resta) y todas las **reversiones** de editar/borrar.
+    `sign` es `'+' | '-'` explícito en el call site (no `'in'/'out'`), para que el signo sea legible y auditable. `stocktake()` e `importInventory()` (en `services/inventory.ts`) **no** usan estos helpers: fijan cantidades absolutas, no deltas.
 
 ## Styling Convention
 
