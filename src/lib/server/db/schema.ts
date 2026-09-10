@@ -8,7 +8,9 @@ export const accounts = sqliteTable('accounts', {
 	email: text('email').notNull().unique(),
 	password_hash: text('password_hash').notNull(),
 	name: text('name').notNull(),
-	role: text('role', { enum: ['admin', 'general'] }).notNull().default('general'),
+	role: text('role', { enum: ['admin', 'general'] })
+		.notNull()
+		.default('general'),
 	created_at: text('created_at')
 		.notNull()
 		.default(sql`(datetime('now'))`)

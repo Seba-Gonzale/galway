@@ -19,5 +19,5 @@ export const actions = {
 			await file.text(),
 			f.get('date')?.toString() ?? ''
 		);
-	},
+	}
 } satisfies Actions;

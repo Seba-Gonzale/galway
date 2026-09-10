@@ -19,7 +19,7 @@
 		{ value: 'import', label: t('auditLogs.actionImport') },
 		{ value: 'status_change', label: t('auditLogs.actionStatusChange') },
 		{ value: 'stocktake', label: t('auditLogs.actionStocktake') },
-		{ value: 'settings_save', label: t('auditLogs.actionSettingsSave') },
+		{ value: 'settings_save', label: t('auditLogs.actionSettingsSave') }
 	]);
 
 	const targetOptions = $derived([
@@ -33,7 +33,7 @@
 		{ value: 'customer', label: t('auditLogs.targetCustomer') },
 		{ value: 'category', label: t('auditLogs.targetCategory') },
 		{ value: 'account', label: t('auditLogs.targetAccount') },
-		{ value: 'settings', label: t('auditLogs.targetSettings') },
+		{ value: 'settings', label: t('auditLogs.targetSettings') }
 	]);
 
 	const actionLabelMap = $derived<Record<string, string>>({
@@ -43,7 +43,7 @@
 		import: t('auditLogs.actionImport'),
 		status_change: t('auditLogs.actionStatusChange'),
 		stocktake: t('auditLogs.actionStocktake'),
-		settings_save: t('auditLogs.actionSettingsSave'),
+		settings_save: t('auditLogs.actionSettingsSave')
 	});
 
 	const targetLabelMap = $derived<Record<string, string>>({
@@ -56,7 +56,7 @@
 		customer: t('auditLogs.targetCustomer'),
 		category: t('auditLogs.targetCategory'),
 		account: t('auditLogs.targetAccount'),
-		settings: t('auditLogs.targetSettings'),
+		settings: t('auditLogs.targetSettings')
 	});
 
 	function buildParams(p: number) {
@@ -100,7 +100,7 @@
 		import: 'orange',
 		status_change: 'purple',
 		stocktake: 'teal',
-		settings_save: 'gray',
+		settings_save: 'gray'
 	};
 </script>
 
@@ -113,7 +113,11 @@
 
 	<div class="filters">
 		<div class="filter-field">
-			<Input bind:value={filterUser} placeholder={t('auditLogs.searchUserPlaceholder')} onkeydown={(e) => e.key === 'Enter' && handleFilter()} />
+			<Input
+				bind:value={filterUser}
+				placeholder={t('auditLogs.searchUserPlaceholder')}
+				onkeydown={(e) => e.key === 'Enter' && handleFilter()}
+			/>
 		</div>
 		<div class="filter-select">
 			<Select options={actionOptions} bind:value={filterAction} onchange={handleFilter} />
@@ -238,12 +242,24 @@
 		}
 	}
 
-	.col-date { width: 160px; }
-	.col-user { width: 100px; }
-	.col-action { width: 125px; }
-	.col-target { width: 120px; }
-	.col-label { width: 200px; }
-	.col-detail { flex: 1; }
+	.col-date {
+		width: 160px;
+	}
+	.col-user {
+		width: 100px;
+	}
+	.col-action {
+		width: 125px;
+	}
+	.col-target {
+		width: 120px;
+	}
+	.col-label {
+		width: 200px;
+	}
+	.col-detail {
+		flex: 1;
+	}
 
 	.mono {
 		font-variant-numeric: tabular-nums;
@@ -267,12 +283,33 @@
 		font-size: 0.75rem;
 		font-weight: 500;
 
-		&.action-green  { background-color: var(--color-success-light);  color: var(--color-success); }
-		&.action-blue   { background-color: var(--color-primary-light);  color: var(--color-primary); }
-		&.action-red    { background-color: var(--color-danger-bg);      color: var(--color-danger); }
-		&.action-orange { background-color: var(--color-warning-light);  color: var(--color-warning); }
-		&.action-purple { background-color: #f3e8ff; color: #7c3aed; }
-		&.action-teal   { background-color: #ccfbf1; color: #0f766e; }
-		&.action-gray   { background-color: var(--color-bg-sunken);      color: var(--color-text-secondary); }
+		&.action-green {
+			background-color: var(--color-success-light);
+			color: var(--color-success);
+		}
+		&.action-blue {
+			background-color: var(--color-primary-light);
+			color: var(--color-primary);
+		}
+		&.action-red {
+			background-color: var(--color-danger-bg);
+			color: var(--color-danger);
+		}
+		&.action-orange {
+			background-color: var(--color-warning-light);
+			color: var(--color-warning);
+		}
+		&.action-purple {
+			background-color: #f3e8ff;
+			color: #7c3aed;
+		}
+		&.action-teal {
+			background-color: #ccfbf1;
+			color: #0f766e;
+		}
+		&.action-gray {
+			background-color: var(--color-bg-sunken);
+			color: var(--color-text-secondary);
+		}
 	}
 </style>

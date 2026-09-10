@@ -1,6 +1,12 @@
 import { makeCtx } from '$lib/services';
 export type { Product } from '$lib/types/product';
-import { listProducts, createProduct, updateProduct, deleteProduct, importProducts } from '$lib/services/product';
+import {
+	listProducts,
+	createProduct,
+	updateProduct,
+	deleteProduct,
+	importProducts
+} from '$lib/services/product';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ platform, locals, url }) =>
@@ -21,7 +27,7 @@ export const actions = {
 			unit: f.get('unit')?.toString().trim() ?? '',
 			description: f.get('description')?.toString().trim() || null,
 			category_id: f.get('category_id')?.toString() || null,
-			min_quantity: isNaN(min_quantity) ? 0 : min_quantity,
+			min_quantity: isNaN(min_quantity) ? 0 : min_quantity
 		});
 	},
 
@@ -35,7 +41,7 @@ export const actions = {
 			unit: f.get('unit')?.toString().trim() ?? '',
 			description: f.get('description')?.toString().trim() || null,
 			category_id: f.get('category_id')?.toString() || null,
-			min_quantity: isNaN(min_quantity) ? 0 : min_quantity,
+			min_quantity: isNaN(min_quantity) ? 0 : min_quantity
 		});
 	},
 
@@ -48,6 +54,10 @@ export const actions = {
 		const f = await request.formData();
 		const file = f.get('file') as File | null;
 		if (!file) return { success: false, error: 'No file selected' };
-		return importProducts(makeCtx(platform!, locals), await file.text(), f.get('mode')?.toString() ?? '');
-	},
+		return importProducts(
+			makeCtx(platform!, locals),
+			await file.text(),
+			f.get('mode')?.toString() ?? ''
+		);
+	}
 } satisfies Actions;

@@ -36,7 +36,7 @@
 			product_name: d.product_name,
 			ordered_qty: d.quantity,
 			actual_qty: d.quantity,
-			unit: d.unit,
+			unit: d.unit
 		}));
 		showReceiveModal = true;
 	}
@@ -45,14 +45,20 @@
 		draft: t('purchasing.statusDraft'),
 		ordered: t('purchasing.statusOrdered'),
 		received: t('purchasing.statusReceived'),
-		cancelled: t('purchasing.statusCancelled'),
+		cancelled: t('purchasing.statusCancelled')
 	});
 
 	const STATUS_TRANSITIONS = $derived<Record<string, { label: string; next: string }[]>>({
-		draft: [{ label: t('purchasing.actionConfirm'), next: 'ordered' }, { label: t('purchasing.actionCancel'), next: 'cancelled' }],
-		ordered: [{ label: t('purchasing.actionReceive'), next: 'received' }, { label: t('purchasing.actionCancel'), next: 'cancelled' }],
+		draft: [
+			{ label: t('purchasing.actionConfirm'), next: 'ordered' },
+			{ label: t('purchasing.actionCancel'), next: 'cancelled' }
+		],
+		ordered: [
+			{ label: t('purchasing.actionReceive'), next: 'received' },
+			{ label: t('purchasing.actionCancel'), next: 'cancelled' }
+		],
 		received: [],
-		cancelled: [{ label: t('purchasing.actionRevertDraft'), next: 'draft' }],
+		cancelled: [{ label: t('purchasing.actionRevertDraft'), next: 'draft' }]
 	});
 
 	const transitions = $derived(STATUS_TRANSITIONS[data.order.status] ?? []);
@@ -77,7 +83,7 @@
 		{ key: 'product_code', label: t('purchasing.productCode'), width: '160px' },
 		{ key: 'product_name', label: t('purchasing.productName') },
 		{ key: 'quantity', label: t('purchasing.quantity'), width: '100px', numeric: true },
-		{ key: 'unit', label: t('purchasing.unit'), width: '80px' },
+		{ key: 'unit', label: t('purchasing.unit'), width: '80px' }
 	]);
 </script>
 
@@ -112,7 +118,11 @@
 				</Button>
 			{/if}
 			{#if data.order.status === 'draft'}
-				<Button variant="secondary" size="sm" onclick={() => goto(`/purchasing/${data.order.id}/edit`)}>
+				<Button
+					variant="secondary"
+					size="sm"
+					onclick={() => goto(`/purchasing/${data.order.id}/edit`)}
+				>
 					<Pencil size={14} />
 					{t('common.edit')}
 				</Button>
@@ -210,13 +220,21 @@
 				</thead>
 				<tbody>
 					{#each data.details as detail (detail.product_id)}
-						{@const received = Number(data.receivedByProduct.find((r) => r.product_id === detail.product_id)?.total_received ?? 0)}
+						{@const received = Number(
+							data.receivedByProduct.find((r) => r.product_id === detail.product_id)
+								?.total_received ?? 0
+						)}
 						{@const diff = received - detail.quantity}
 						<tr>
 							<td>{detail.product_name ?? '—'}</td>
 							<td class="num">{detail.quantity.toLocaleString('ja-JP')}</td>
 							<td class="num">{received.toLocaleString('ja-JP')}</td>
-							<td class="num diff" class:diff-pos={diff > 0} class:diff-zero={diff === 0 && received > 0} class:diff-neg={diff < 0}>
+							<td
+								class="num diff"
+								class:diff-pos={diff > 0}
+								class:diff-zero={diff === 0 && received > 0}
+								class:diff-neg={diff < 0}
+							>
 								{diff > 0 ? '+' : ''}{diff.toLocaleString('ja-JP')}
 							</td>
 						</tr>
@@ -266,10 +284,11 @@
 	<form
 		method="POST"
 		action="?/convertToReceiving"
-		use:enhance={() => async ({ update }) => {
-			await update({ reset: false });
-			showReceiveModal = false;
-		}}
+		use:enhance={() =>
+			async ({ update }) => {
+				await update({ reset: false });
+				showReceiveModal = false;
+			}}
 		class="receive-form"
 	>
 		<p class="receive-hint">{t('purchasing.createReceivingSlipHint')}</p>
@@ -315,7 +334,9 @@
 		<input
 			type="hidden"
 			name="details"
-			value={JSON.stringify(receiveItems.map((it) => ({ product_id: it.product_id, quantity: it.actual_qty })))}
+			value={JSON.stringify(
+				receiveItems.map((it) => ({ product_id: it.product_id, quantity: it.actual_qty }))
+			)}
 		/>
 
 		<div class="receive-note-row">

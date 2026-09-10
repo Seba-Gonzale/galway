@@ -28,21 +28,37 @@ describe('Product Service', () => {
 		const pw = await hashPassword('test123');
 		const [account] = await db
 			.insert(schema.accounts)
-			.values({ email: 'product-svc-test@example.com', password_hash: pw, name: 'Product Test', role: 'admin' })
+			.values({
+				email: 'product-svc-test@example.com',
+				password_hash: pw,
+				name: 'Product Test',
+				role: 'admin'
+			})
 			.returning();
 		testAccountId = account.id;
 
 		// Directly insert a product for update/delete tests (bypassing createProduct which uses a transaction)
 		const [product] = await db
 			.insert(schema.products)
-			.values({ code: `TST-SVC-${Date.now()}`, name: 'Service Test Product', unit: 'kg', min_quantity: 5 })
+			.values({
+				code: `TST-SVC-${Date.now()}`,
+				name: 'Service Test Product',
+				unit: 'kg',
+				min_quantity: 5
+			})
 			.returning();
 		testProductId = product.id;
 
 		ctx = {
 			db,
 			env: proxy.env as Env,
-			user: { id: account.id, name: account.name, email: account.email, role: account.role, created_at: account.created_at },
+			user: {
+				id: account.id,
+				name: account.name,
+				email: account.email,
+				role: account.role,
+				created_at: account.created_at
+			}
 		};
 	});
 
@@ -57,27 +73,59 @@ describe('Product Service', () => {
 	});
 
 	it('createProduct validates required code', async () => {
-		const result = await createProduct(ctx, { code: '', name: 'X', unit: 'kg', description: null, category_id: null, min_quantity: 0 });
+		const result = await createProduct(ctx, {
+			code: '',
+			name: 'X',
+			unit: 'kg',
+			description: null,
+			category_id: null,
+			min_quantity: 0
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('createProduct validates required name', async () => {
-		const result = await createProduct(ctx, { code: 'VALID-CODE', name: '', unit: 'kg', description: null, category_id: null, min_quantity: 0 });
+		const result = await createProduct(ctx, {
+			code: 'VALID-CODE',
+			name: '',
+			unit: 'kg',
+			description: null,
+			category_id: null,
+			min_quantity: 0
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('createProduct validates required unit', async () => {
-		const result = await createProduct(ctx, { code: 'VALID-CODE', name: 'Valid Name', unit: '', description: null, category_id: null, min_quantity: 0 });
+		const result = await createProduct(ctx, {
+			code: 'VALID-CODE',
+			name: 'Valid Name',
+			unit: '',
+			description: null,
+			category_id: null,
+			min_quantity: 0
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('updateProduct validates required id', async () => {
-		const result = await updateProduct(ctx, { id: '', code: 'X', name: 'X', unit: 'kg', description: null, category_id: null, min_quantity: 0 });
+		const result = await updateProduct(ctx, {
+			id: '',
+			code: 'X',
+			name: 'X',
+			unit: 'kg',
+			description: null,
+			category_id: null,
+			min_quantity: 0
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
 	it('updateProduct modifies the product', async () => {
-		const [product] = await ctx.db.select().from(schema.products).where(eq(schema.products.id, testProductId));
+		const [product] = await ctx.db
+			.select()
+			.from(schema.products)
+			.where(eq(schema.products.id, testProductId));
 		const result = await updateProduct(ctx, {
 			id: testProductId,
 			code: product.code,
@@ -85,11 +133,14 @@ describe('Product Service', () => {
 			unit: 'pcs',
 			description: 'Updated description',
 			category_id: null,
-			min_quantity: 10,
+			min_quantity: 10
 		});
 		expect(result).toMatchObject({ success: true });
 
-		const [updated] = await ctx.db.select().from(schema.products).where(eq(schema.products.id, testProductId));
+		const [updated] = await ctx.db
+			.select()
+			.from(schema.products)
+			.where(eq(schema.products.id, testProductId));
 		expect(updated.name).toBe('Service Test Product (updated)');
 		expect(updated.min_quantity).toBe(10);
 	});
@@ -103,7 +154,10 @@ describe('Product Service', () => {
 		const result = await deleteProduct(ctx, testProductId);
 		expect(result).toMatchObject({ success: true });
 
-		const [found] = await ctx.db.select().from(schema.products).where(eq(schema.products.id, testProductId));
+		const [found] = await ctx.db
+			.select()
+			.from(schema.products)
+			.where(eq(schema.products.id, testProductId));
 		expect(found).toBeUndefined();
 		testProductId = '';
 	});

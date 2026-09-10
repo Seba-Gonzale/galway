@@ -31,7 +31,14 @@
 		oncancel?: () => void;
 	}
 
-	let { suppliers, products, accounts = [], isAdmin = false, initialData, oncancel }: Props = $props();
+	let {
+		suppliers,
+		products,
+		accounts = [],
+		isAdmin = false,
+		initialData,
+		oncancel
+	}: Props = $props();
 
 	const isEdit = $derived(!!initialData?.id);
 	const action = $derived(isEdit ? '?/update' : '?/create');
@@ -55,7 +62,10 @@
 			supplierId = initialData.supplier_id;
 			accountId = initialData.account_id;
 			note = initialData.note ?? '';
-			details = initialData.details.map((d) => ({ product_id: d.product_id, quantity: d.quantity }));
+			details = initialData.details.map((d) => ({
+				product_id: d.product_id,
+				quantity: d.quantity
+			}));
 		} else {
 			date = new Date().toISOString().slice(0, 10);
 			supplierId = '';

@@ -20,5 +20,5 @@ export const actions = {
 			f.get('date')?.toString() ?? '',
 			f.get('supplier_id')?.toString() ?? ''
 		);
-	},
+	}
 } satisfies Actions;

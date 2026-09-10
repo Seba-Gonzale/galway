@@ -16,7 +16,7 @@ export async function listCustomers(ctx: ServiceCtx) {
 			address: schema.customers.address,
 			email: schema.customers.email,
 			note: schema.customers.note,
-			slip_count: count(schema.shippingSlips.id),
+			slip_count: count(schema.shippingSlips.id)
 		})
 		.from(schema.customers)
 		.leftJoin(schema.shippingSlips, eq(schema.shippingSlips.customer_id, schema.customers.id))
@@ -28,7 +28,14 @@ export async function listCustomers(ctx: ServiceCtx) {
 
 export async function createCustomer(
 	ctx: ServiceCtx,
-	data: { name: string; tel: string | null; zipcode: string | null; address: string | null; email: string | null; note: string | null }
+	data: {
+		name: string;
+		tel: string | null;
+		zipcode: string | null;
+		address: string | null;
+		email: string | null;
+		note: string | null;
+	}
 ) {
 	const parsed = customerSchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });
@@ -36,7 +43,9 @@ export async function createCustomer(
 
 	const now = new Date().toISOString();
 	try {
-		await ctx.db.insert(schema.customers).values({ name, tel, zipcode, address, email, note, created_at: now, updated_at: now });
+		await ctx.db
+			.insert(schema.customers)
+			.values({ name, tel, zipcode, address, email, note, created_at: now, updated_at: now });
 		await auditLog(ctx, 'create', 'customer', { target_label: name });
 		return { success: true };
 	} catch (err) {
@@ -46,7 +55,15 @@ export async function createCustomer(
 
 export async function updateCustomer(
 	ctx: ServiceCtx,
-	data: { id: string; name: string; tel: string | null; zipcode: string | null; address: string | null; email: string | null; note: string | null }
+	data: {
+		id: string;
+		name: string;
+		tel: string | null;
+		zipcode: string | null;
+		address: string | null;
+		email: string | null;
+		note: string | null;
+	}
 ) {
 	if (!data.id) return fail(400, { error: 'ID is required' });
 	const parsed = customerSchema.safeParse(data);
@@ -69,7 +86,10 @@ export async function deleteCustomer(ctx: ServiceCtx, id: string) {
 	if (!id) return fail(400, { error: 'ID is required' });
 
 	try {
-		const [target] = await ctx.db.select({ name: schema.customers.name }).from(schema.customers).where(eq(schema.customers.id, id));
+		const [target] = await ctx.db
+			.select({ name: schema.customers.name })
+			.from(schema.customers)
+			.where(eq(schema.customers.id, id));
 		await ctx.db.delete(schema.customers).where(eq(schema.customers.id, id));
 		await auditLog(ctx, 'delete', 'customer', { target_id: id, target_label: target?.name });
 		return { success: true };

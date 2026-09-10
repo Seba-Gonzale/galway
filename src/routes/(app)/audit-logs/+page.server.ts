@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ platform, locals, url }) => {
 			.where(whereClause)
 			.orderBy(desc(schema.auditLogs.created_at))
 			.limit(itemsPerPage)
-			.offset(offset),
+			.offset(offset)
 	]);
 
 	return {
@@ -39,6 +39,6 @@ export const load: PageServerLoad = async ({ platform, locals, url }) => {
 		currentPage,
 		filterAction,
 		filterTarget,
-		filterUser,
+		filterUser
 	};
 };

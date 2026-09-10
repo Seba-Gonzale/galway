@@ -94,17 +94,22 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = await res.json() as any;
+			const json = (await res.json()) as any;
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = { type: 'success', message: `${json.data?.count ?? ''} ${t('common.items')} imported` };
+				importNotification = {
+					type: 'success',
+					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
+				};
 			} else {
 				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
 			importNotification = { type: 'error', message: t('common.error') };
 		}
-		setTimeout(() => { importNotification = null; }, 6000);
+		setTimeout(() => {
+			importNotification = null;
+		}, 6000);
 	}}
 />
 

@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 				shipped_at: schema.shippingSlips.shipped_at,
 				customer_name: schema.customers.name,
 				user_name: schema.accounts.name,
-				note: schema.shippingSlips.note,
+				note: schema.shippingSlips.note
 			})
 			.from(schema.shippingSlips)
 			.leftJoin(schema.accounts, eq(schema.shippingSlips.account_id, schema.accounts.id))
@@ -28,12 +28,12 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 				product_code: schema.products.code,
 				product_name: schema.products.name,
 				quantity: schema.shippingSlipDetails.quantity,
-				unit: schema.products.unit,
+				unit: schema.products.unit
 			})
 			.from(schema.shippingSlipDetails)
 			.leftJoin(schema.products, eq(schema.shippingSlipDetails.product_id, schema.products.id))
 			.where(eq(schema.shippingSlipDetails.slip_id, params.id))
-			.orderBy(asc(schema.shippingSlipDetails.line_no)),
+			.orderBy(asc(schema.shippingSlipDetails.line_no))
 	]);
 
 	if (!slipRows[0]) error(404, 'Shipping slip not found');

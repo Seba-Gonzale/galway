@@ -32,7 +32,10 @@ function checkRateLimit(key: string): boolean {
 	return true;
 }
 
-async function resolveAccount(ctx: ServiceCtx, accountId: string): Promise<{ name: string; email: string }> {
+async function resolveAccount(
+	ctx: ServiceCtx,
+	accountId: string
+): Promise<{ name: string; email: string }> {
 	const [account] = await ctx.db
 		.select({ name: schema.accounts.name, email: schema.accounts.email })
 		.from(schema.accounts)
@@ -67,10 +70,13 @@ export async function sendWelcomeEmail(
 
 		const [account, locale] = await Promise.all([
 			resolveAccount(ctx, accountId),
-			getEmailLocale(ctx),
+			getEmailLocale(ctx)
 		]);
 		const provider = createEmailProvider(ctx.env);
-		const { subject, html, text } = welcomeEmail({ name: account.name, email: account.email, loginUrl }, locale);
+		const { subject, html, text } = welcomeEmail(
+			{ name: account.name, email: account.email, loginUrl },
+			locale
+		);
 		await provider.send({ to: account.email, subject, html, text });
 	} catch (err) {
 		console.error('[email] sendWelcomeEmail failed:', err);
@@ -82,17 +88,14 @@ export async function sendWelcomeEmail(
  * Uses the HTTP provider — works in local dev via .dev.vars.
  * Never throws.
  */
-export async function sendPasswordChangedEmail(
-	ctx: ServiceCtx,
-	accountId: string
-): Promise<void> {
+export async function sendPasswordChangedEmail(ctx: ServiceCtx, accountId: string): Promise<void> {
 	try {
 		if (!ctx.env.EMAIL_FROM) return;
 		if (!checkRateLimit(`pwd:${accountId}`)) return;
 
 		const [account, locale] = await Promise.all([
 			resolveAccount(ctx, accountId),
-			getEmailLocale(ctx),
+			getEmailLocale(ctx)
 		]);
 		const provider = createEmailProvider(ctx.env);
 		const changedAt = new Date().toUTCString();
@@ -122,12 +125,21 @@ function createAlertProvider(env: Env, alertTo: string): ReturnType<typeof creat
  */
 export async function sendAdminAlert(ctx: ServiceCtx, data: AdminAlertEmailData): Promise<void> {
 	const [alertEnabledRow, alertToRow, localeRow] = await Promise.all([
-		ctx.db.select({ value: schema.settings.value }).from(schema.settings)
-			.where(eq(schema.settings.key, 'alert_email_enabled')).limit(1),
-		ctx.db.select({ value: schema.settings.value }).from(schema.settings)
-			.where(eq(schema.settings.key, 'notification_email')).limit(1),
-		ctx.db.select({ value: schema.settings.value }).from(schema.settings)
-			.where(eq(schema.settings.key, 'email_locale')).limit(1),
+		ctx.db
+			.select({ value: schema.settings.value })
+			.from(schema.settings)
+			.where(eq(schema.settings.key, 'alert_email_enabled'))
+			.limit(1),
+		ctx.db
+			.select({ value: schema.settings.value })
+			.from(schema.settings)
+			.where(eq(schema.settings.key, 'notification_email'))
+			.limit(1),
+		ctx.db
+			.select({ value: schema.settings.value })
+			.from(schema.settings)
+			.where(eq(schema.settings.key, 'email_locale'))
+			.limit(1)
 	]);
 
 	const alertEnabled = alertEnabledRow[0]?.value !== 'false';
@@ -177,7 +189,13 @@ export function sendAdminAlertFromEnv(env: Env, data: AdminAlertEmailData): void
  */
 export async function sendLowStockAlert(
 	ctx: ServiceCtx,
-	items: { product_code: string; product_name: string; quantity: number; min_quantity: number; unit: string }[]
+	items: {
+		product_code: string;
+		product_name: string;
+		quantity: number;
+		min_quantity: number;
+		unit: string;
+	}[]
 ): Promise<void> {
 	if (items.length === 0) return;
 
@@ -185,18 +203,21 @@ export async function sendLowStockAlert(
 
 	const details: Record<string, string> = {};
 	for (const item of items) {
-		details[`${item.product_code} ${item.product_name}`] = locale === 'ja'
-			? `${item.quantity} ${item.unit}（最小: ${item.min_quantity} ${item.unit}）`
-			: `${item.quantity} ${item.unit} (min: ${item.min_quantity} ${item.unit})`;
+		details[`${item.product_code} ${item.product_name}`] =
+			locale === 'ja'
+				? `${item.quantity} ${item.unit}（最小: ${item.min_quantity} ${item.unit}）`
+				: `${item.quantity} ${item.unit} (min: ${item.min_quantity} ${item.unit})`;
 	}
 
 	const n = items.length;
-	const subject = locale === 'ja'
-		? `低在庫アラート: ${n}件の商品が最低在庫数を下回っています`
-		: `Low Stock Alert: ${n} product${n > 1 ? 's' : ''} below minimum`;
-	const summary = locale === 'ja'
-		? `${n}件の商品が最低在庫数を下回っています。`
-		: `${n} product${n > 1 ? 's are' : ' is'} below the minimum stock threshold.`;
+	const subject =
+		locale === 'ja'
+			? `低在庫アラート: ${n}件の商品が最低在庫数を下回っています`
+			: `Low Stock Alert: ${n} product${n > 1 ? 's' : ''} below minimum`;
+	const summary =
+		locale === 'ja'
+			? `${n}件の商品が最低在庫数を下回っています。`
+			: `${n} product${n > 1 ? 's are' : ' is'} below the minimum stock threshold.`;
 
 	await sendAdminAlert(ctx, { subject, severity: 'warning', summary, details });
 }
@@ -215,11 +236,11 @@ export function notifyLowStockForProducts(ctx: ServiceCtx, productIds: string[])
 				product_name: schema.products.name,
 				unit: schema.products.unit,
 				min_quantity: schema.products.min_quantity,
-				quantity: schema.inventory.quantity,
+				quantity: schema.inventory.quantity
 			})
 			.from(schema.inventory)
 			.innerJoin(schema.products, eq(schema.inventory.product_id, schema.products.id))
-			.where(inArray(schema.inventory.product_id, productIds)),
+			.where(inArray(schema.inventory.product_id, productIds))
 	])
 		.then(([rows]) => {
 			const low = rows.filter((r) => r.min_quantity > 0 && r.quantity < r.min_quantity);

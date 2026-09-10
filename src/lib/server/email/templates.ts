@@ -1,7 +1,11 @@
 export type EmailLocale = 'en' | 'ja';
 
 function escape(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 const s = {
@@ -11,22 +15,24 @@ const s = {
 		welcome: {
 			subject: 'Welcome to Galway',
 			heading: (name: string) => `Welcome, ${name}!`,
-			intro: 'Your Galway account has been created. You can now sign in with the email address below.',
+			intro:
+				'Your Galway account has been created. You can now sign in with the email address below.',
 			emailLabel: 'Email:',
 			btn: 'Sign in to Galway',
 			ignore: 'If you did not request this account, you can safely ignore this email.',
 			text: (name: string, email: string, url: string) =>
-				`Welcome to Galway, ${name}!\n\nYour account has been created.\nEmail: ${email}\nSign in: ${url}\n`,
+				`Welcome to Galway, ${name}!\n\nYour account has been created.\nEmail: ${email}\nSign in: ${url}\n`
 		},
 		pwChanged: {
 			subject: 'Your Galway password was changed',
 			heading: 'Password changed',
 			hi: (name: string) => `Hi ${name},`,
-			body: (date: string) => `Your Galway account password was changed on <strong>${escape(date)}</strong>.`,
+			body: (date: string) =>
+				`Your Galway account password was changed on <strong>${escape(date)}</strong>.`,
 			ignore: 'If you did not make this change, please contact your administrator immediately.',
 			text: (name: string, date: string) =>
-				`Hi ${name},\n\nYour Galway password was changed on ${date}.\n\nIf this wasn't you, contact your administrator.\n`,
-		},
+				`Hi ${name},\n\nYour Galway password was changed on ${date}.\n\nIf this wasn't you, contact your administrator.\n`
+		}
 	},
 	ja: {
 		footer: '© Galway · このメールは自動送信です。返信はお受けできません。',
@@ -39,7 +45,7 @@ const s = {
 			btn: 'Galwayにサインイン',
 			ignore: 'アカウントの作成を依頼していない場合は、このメールを無視してください。',
 			text: (name: string, email: string, url: string) =>
-				`${name} さん、Galwayへようこそ！\n\nアカウントが作成されました。\nメールアドレス: ${email}\nサインイン: ${url}\n`,
+				`${name} さん、Galwayへようこそ！\n\nアカウントが作成されました。\nメールアドレス: ${email}\nサインイン: ${url}\n`
 		},
 		pwChanged: {
 			subject: 'Galwayのパスワードが変更されました',
@@ -48,9 +54,9 @@ const s = {
 			body: (date: string) => `${escape(date)} にGalwayアカウントのパスワードが変更されました。`,
 			ignore: '心当たりのない場合は、すぐに管理者にご連絡ください。',
 			text: (name: string, date: string) =>
-				`${name} さん\n\nGalwayのパスワードが ${date} に変更されました。\n\n心当たりのない場合は管理者にご連絡ください。\n`,
-		},
-	},
+				`${name} さん\n\nGalwayのパスワードが ${date} に変更されました。\n\n心当たりのない場合は管理者にご連絡ください。\n`
+		}
+	}
 } as const;
 
 function base(title: string, body: string, locale: EmailLocale = 'en'): string {
@@ -94,7 +100,10 @@ export interface WelcomeEmailData {
 	loginUrl: string;
 }
 
-export function welcomeEmail(data: WelcomeEmailData, locale: EmailLocale = 'en'): { subject: string; html: string; text: string } {
+export function welcomeEmail(
+	data: WelcomeEmailData,
+	locale: EmailLocale = 'en'
+): { subject: string; html: string; text: string } {
 	const ls = s[locale].welcome;
 	const subject = ls.subject;
 	const html = base(
@@ -115,7 +124,10 @@ export interface PasswordChangedEmailData {
 	changedAt: string;
 }
 
-export function passwordChangedEmail(data: PasswordChangedEmailData, locale: EmailLocale = 'en'): { subject: string; html: string; text: string } {
+export function passwordChangedEmail(
+	data: PasswordChangedEmailData,
+	locale: EmailLocale = 'en'
+): { subject: string; html: string; text: string } {
 	const ls = s[locale].pwChanged;
 	const subject = ls.subject;
 	const html = base(
@@ -139,13 +151,19 @@ export interface AdminAlertEmailData {
 	details?: Record<string, string>;
 }
 
-export function adminAlertEmail(data: AdminAlertEmailData, locale: EmailLocale = 'en'): { subject: string; html: string; text: string } {
+export function adminAlertEmail(
+	data: AdminAlertEmailData,
+	locale: EmailLocale = 'en'
+): { subject: string; html: string; text: string } {
 	const badgeClass = `alert-${data.severity}`;
 	const badgeLabel = s[locale].severity[data.severity];
 
 	const detailsHtml = data.details
 		? Object.entries(data.details)
-				.map(([k, v]) => `<tr><td style="padding:4px 8px;font-weight:600;white-space:nowrap">${escape(k)}</td><td style="padding:4px 8px">${escape(v)}</td></tr>`)
+				.map(
+					([k, v]) =>
+						`<tr><td style="padding:4px 8px;font-weight:600;white-space:nowrap">${escape(k)}</td><td style="padding:4px 8px">${escape(v)}</td></tr>`
+				)
 				.join('')
 		: '';
 
@@ -162,7 +180,10 @@ export function adminAlertEmail(data: AdminAlertEmailData, locale: EmailLocale =
 	);
 
 	const detailsText = data.details
-		? '\n\nDetails:\n' + Object.entries(data.details).map(([k, v]) => `  ${k}: ${v}`).join('\n')
+		? '\n\nDetails:\n' +
+			Object.entries(data.details)
+				.map(([k, v]) => `  ${k}: ${v}`)
+				.join('\n')
 		: '';
 
 	const text = `[${badgeLabel}] ${data.subject}\n\n${data.summary}${detailsText}\n`;

@@ -1,6 +1,16 @@
 <script lang="ts">
 	import { ClipboardList, Upload, Download, AlertTriangle } from '@lucide/svelte';
-	import { Button, Label, Modal, Table, Select, SearchBar, SearchableSelect, Pagination, CsvImportDialog } from '$lib/ui';
+	import {
+		Button,
+		Label,
+		Modal,
+		Table,
+		Select,
+		SearchBar,
+		SearchableSelect,
+		Pagination,
+		CsvImportDialog
+	} from '$lib/ui';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { PageData } from './$types';
@@ -109,7 +119,11 @@
 	{/if}
 
 	<div class="filters">
-		<SearchBar bind:value={searchQuery} placeholder={t('inventory.searchPlaceholder')} onsubmit={handleSearch} />
+		<SearchBar
+			bind:value={searchQuery}
+			placeholder={t('inventory.searchPlaceholder')}
+			onsubmit={handleSearch}
+		/>
 		<div class="supplier-filter">
 			<SearchableSelect
 				options={supplierOptions}
@@ -131,7 +145,10 @@
 						<span class="qty-cell">
 							{item.quantity.toLocaleString()}
 							{#if isLow}
-								<span class="low-badge" title="{t('inventory.lowStock')}: {item.min_quantity.toLocaleString()}">
+								<span
+									class="low-badge"
+									title="{t('inventory.lowStock')}: {item.min_quantity.toLocaleString()}"
+								>
 									<AlertTriangle size={12} />
 								</span>
 							{/if}
@@ -166,17 +183,22 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = await res.json() as any;
+			const json = (await res.json()) as any;
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = { type: 'success', message: `${json.data?.count ?? ''} ${t('common.items')} imported` };
+				importNotification = {
+					type: 'success',
+					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
+				};
 			} else {
 				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
 			importNotification = { type: 'error', message: t('common.error') };
 		}
-		setTimeout(() => { importNotification = null; }, 6000);
+		setTimeout(() => {
+			importNotification = null;
+		}, 6000);
 	}}
 />
 

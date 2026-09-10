@@ -12,11 +12,11 @@ export const actions = {
 		const result = await updateProfile(makeCtx(platform!, locals), {
 			name: f.get('name')?.toString()?.trim() ?? '',
 			currentPassword: f.get('currentPassword')?.toString(),
-			newPassword: f.get('newPassword')?.toString(),
+			newPassword: f.get('newPassword')?.toString()
 		});
 		if (result && 'newToken' in result && result.newToken) {
 			cookies.set('session', result.newToken, SESSION_COOKIE_OPTIONS);
 		}
 		return result;
-	},
+	}
 } satisfies Actions;

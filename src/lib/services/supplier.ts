@@ -22,7 +22,7 @@ export async function listSuppliers(ctx: ServiceCtx, search: string, page: numbe
 				fax: schema.suppliers.fax,
 				zipcode: schema.suppliers.zipcode,
 				address: schema.suppliers.address,
-				email: schema.suppliers.email,
+				email: schema.suppliers.email
 			})
 			.from(schema.suppliers)
 			.where(whereClause)
@@ -30,12 +30,20 @@ export async function listSuppliers(ctx: ServiceCtx, search: string, page: numbe
 			.limit(itemsPerPage)
 			.offset(offset),
 		ctx.db
-			.select({ id: schema.products.id, code: schema.products.code, name: schema.products.name, unit: schema.products.unit })
+			.select({
+				id: schema.products.id,
+				code: schema.products.code,
+				name: schema.products.name,
+				unit: schema.products.unit
+			})
 			.from(schema.products)
 			.orderBy(asc(schema.products.code)),
 		ctx.db
-			.select({ supplier_id: schema.supplierProducts.supplier_id, product_id: schema.supplierProducts.product_id })
-			.from(schema.supplierProducts),
+			.select({
+				supplier_id: schema.supplierProducts.supplier_id,
+				product_id: schema.supplierProducts.product_id
+			})
+			.from(schema.supplierProducts)
 	]);
 
 	const supplierProductMap: Record<string, string[]> = {};
@@ -51,13 +59,20 @@ export async function listSuppliers(ctx: ServiceCtx, search: string, page: numbe
 		totalItems: countResult[0]?.count ?? 0,
 		itemsPerPage,
 		currentPage,
-		searchQuery: search,
+		searchQuery: search
 	};
 }
 
 export async function createSupplier(
 	ctx: ServiceCtx,
-	data: { name: string; tel: string | null; fax: string | null; zipcode: string | null; address: string | null; email: string | null }
+	data: {
+		name: string;
+		tel: string | null;
+		fax: string | null;
+		zipcode: string | null;
+		address: string | null;
+		email: string | null;
+	}
 ) {
 	const parsed = supplierSchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });
@@ -65,7 +80,14 @@ export async function createSupplier(
 
 	try {
 		await ctx.db.insert(schema.suppliers).values({ name, tel, fax, zipcode, address, email });
-		await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'create', target_type: 'supplier', target_label: name });
+		await logAudit({
+			db: ctx.db,
+			user_id: ctx.user.id,
+			user_name: ctx.user.name,
+			action: 'create',
+			target_type: 'supplier',
+			target_label: name
+		});
 		return { success: true };
 	} catch (err) {
 		console.error('Failed to create supplier:', err);
@@ -75,7 +97,15 @@ export async function createSupplier(
 
 export async function updateSupplier(
 	ctx: ServiceCtx,
-	data: { id: string; name: string; tel: string | null; fax: string | null; zipcode: string | null; address: string | null; email: string | null }
+	data: {
+		id: string;
+		name: string;
+		tel: string | null;
+		fax: string | null;
+		zipcode: string | null;
+		address: string | null;
+		email: string | null;
+	}
 ) {
 	if (!data.id) return fail(400, { error: 'ID is required' });
 	const parsed = supplierSchema.safeParse(data);
@@ -87,7 +117,15 @@ export async function updateSupplier(
 			.update(schema.suppliers)
 			.set({ name, tel, fax, zipcode, address, email, updated_at: new Date().toISOString() })
 			.where(eq(schema.suppliers.id, data.id));
-		await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'update', target_type: 'supplier', target_id: data.id, target_label: name });
+		await logAudit({
+			db: ctx.db,
+			user_id: ctx.user.id,
+			user_name: ctx.user.name,
+			action: 'update',
+			target_type: 'supplier',
+			target_id: data.id,
+			target_label: name
+		});
 		return { success: true };
 	} catch (err) {
 		console.error('Failed to update supplier:', err);
@@ -99,9 +137,20 @@ export async function deleteSupplier(ctx: ServiceCtx, id: string) {
 	if (!id) return fail(400, { error: 'ID is required' });
 
 	try {
-		const [target] = await ctx.db.select({ name: schema.suppliers.name }).from(schema.suppliers).where(eq(schema.suppliers.id, id));
+		const [target] = await ctx.db
+			.select({ name: schema.suppliers.name })
+			.from(schema.suppliers)
+			.where(eq(schema.suppliers.id, id));
 		await ctx.db.delete(schema.suppliers).where(eq(schema.suppliers.id, id));
-		await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'delete', target_type: 'supplier', target_id: id, target_label: target?.name });
+		await logAudit({
+			db: ctx.db,
+			user_id: ctx.user.id,
+			user_name: ctx.user.name,
+			action: 'delete',
+			target_type: 'supplier',
+			target_id: id,
+			target_label: target?.name
+		});
 		return { success: true };
 	} catch (err) {
 		console.error('Failed to delete supplier:', err);
@@ -117,18 +166,31 @@ export async function getSupplierProducts(ctx: ServiceCtx, supplierId: string) {
 	const linkedIds = linked.map((r) => r.product_id);
 
 	const allProducts = await ctx.db
-		.select({ id: schema.products.id, code: schema.products.code, name: schema.products.name, unit: schema.products.unit })
+		.select({
+			id: schema.products.id,
+			code: schema.products.code,
+			name: schema.products.name,
+			unit: schema.products.unit
+		})
 		.from(schema.products)
 		.orderBy(asc(schema.products.code));
 
 	return { linkedIds, allProducts };
 }
 
-export async function setSupplierProducts(ctx: ServiceCtx, supplierId: string, productIds: string[]) {
+export async function setSupplierProducts(
+	ctx: ServiceCtx,
+	supplierId: string,
+	productIds: string[]
+) {
 	try {
-		await ctx.db.delete(schema.supplierProducts).where(eq(schema.supplierProducts.supplier_id, supplierId));
+		await ctx.db
+			.delete(schema.supplierProducts)
+			.where(eq(schema.supplierProducts.supplier_id, supplierId));
 		if (productIds.length > 0) {
-			await ctx.db.insert(schema.supplierProducts).values(productIds.map((product_id) => ({ supplier_id: supplierId, product_id })));
+			await ctx.db
+				.insert(schema.supplierProducts)
+				.values(productIds.map((product_id) => ({ supplier_id: supplierId, product_id })));
 		}
 		return { success: true };
 	} catch (err) {
@@ -139,14 +201,21 @@ export async function setSupplierProducts(ctx: ServiceCtx, supplierId: string, p
 
 export async function getExportData(ctx: ServiceCtx, search: string) {
 	const whereClause = search ? like(schema.suppliers.name, `%${search}%`) : undefined;
-	return ctx.db.select().from(schema.suppliers).where(whereClause).orderBy(asc(schema.suppliers.name));
+	return ctx.db
+		.select()
+		.from(schema.suppliers)
+		.where(whereClause)
+		.orderBy(asc(schema.suppliers.name));
 }
 
 export async function importSuppliers(ctx: ServiceCtx, csvText: string, mode: string) {
 	if (mode !== 'append' && mode !== 'replace') return fail(400, { error: 'Invalid import mode' });
 
 	const rows = parseCSV(csvText);
-	if (rows.length < 2) return fail(400, { error: 'CSV has no data (requires a header row plus at least one data row)' });
+	if (rows.length < 2)
+		return fail(400, {
+			error: 'CSV has no data (requires a header row plus at least one data row)'
+		});
 
 	const [header, ...dataRows] = rows;
 	const nameIdx = header.findIndex((h) => h.trim() === 'Supplier Name');
@@ -166,7 +235,7 @@ export async function importSuppliers(ctx: ServiceCtx, csvText: string, mode: st
 			fax: faxIdx >= 0 ? row[faxIdx]?.trim() || null : null,
 			zipcode: zipcodeIdx >= 0 ? row[zipcodeIdx]?.trim() || null : null,
 			address: addressIdx >= 0 ? row[addressIdx]?.trim() || null : null,
-			email: emailIdx >= 0 ? row[emailIdx]?.trim() || null : null,
+			email: emailIdx >= 0 ? row[emailIdx]?.trim() || null : null
 		}));
 
 	if (records.length === 0) return fail(400, { error: 'No valid data found' });
@@ -178,6 +247,13 @@ export async function importSuppliers(ctx: ServiceCtx, csvText: string, mode: st
 		console.error('Failed to import suppliers:', err);
 		return fail(500, { error: 'Failed to import suppliers' });
 	}
-	await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'import', target_type: 'supplier', detail: { count: records.length, mode } });
+	await logAudit({
+		db: ctx.db,
+		user_id: ctx.user.id,
+		user_name: ctx.user.name,
+		action: 'import',
+		target_type: 'supplier',
+		detail: { count: records.length, mode }
+	});
 	return { success: true, count: records.length };
 }

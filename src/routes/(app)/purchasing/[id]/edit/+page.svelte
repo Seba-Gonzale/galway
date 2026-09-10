@@ -8,7 +8,9 @@
 	let { data }: { data: PageData } = $props();
 
 	const supplierOptions = $derived(data.suppliers.map((s) => ({ value: s.id, label: s.name })));
-	const productOptions = $derived(data.products.map((p) => ({ value: p.id, label: `${p.code} ${p.name}` })));
+	const productOptions = $derived(
+		data.products.map((p) => ({ value: p.id, label: `${p.code} ${p.name}` }))
+	);
 
 	let supplierId = $state('');
 	let orderedAt = $state('');
@@ -105,7 +107,14 @@
 								/>
 							</div>
 							<div class="col-qty">
-								<input class="qty-input" type="number" min="1" step="0.01" bind:value={detail.quantity} required />
+								<input
+									class="qty-input"
+									type="number"
+									min="1"
+									step="0.01"
+									bind:value={detail.quantity}
+									required
+								/>
 							</div>
 							<div class="col-del">
 								{#if details.length > 1}
@@ -120,7 +129,11 @@
 			</div>
 
 			<div class="form-actions">
-				<Button type="button" variant="secondary" onclick={() => goto(`/purchasing/${data.order.id}`)}>
+				<Button
+					type="button"
+					variant="secondary"
+					onclick={() => goto(`/purchasing/${data.order.id}`)}
+				>
 					{t('common.cancel')}
 				</Button>
 				<Button type="submit">{t('common.update')}</Button>

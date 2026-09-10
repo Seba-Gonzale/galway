@@ -14,7 +14,7 @@
 		draft: t('purchasing.statusDraft'),
 		ordered: t('purchasing.statusOrdered'),
 		received: t('purchasing.statusReceived'),
-		cancelled: t('purchasing.statusCancelled'),
+		cancelled: t('purchasing.statusCancelled')
 	});
 
 	const STATUS_OPTIONS: { value: Status; label: () => string }[] = [
@@ -22,12 +22,13 @@
 		{ value: 'draft', label: () => t('purchasing.statusDraft') },
 		{ value: 'ordered', label: () => t('purchasing.statusOrdered') },
 		{ value: 'received', label: () => t('purchasing.statusReceived') },
-		{ value: 'cancelled', label: () => t('purchasing.statusCancelled') },
+		{ value: 'cancelled', label: () => t('purchasing.statusCancelled') }
 	];
 
 	function setStatus(s: Status) {
 		const params = new URLSearchParams(page.url.searchParams);
-		if (s) params.set('status', s); else params.delete('status');
+		if (s) params.set('status', s);
+		else params.delete('status');
 		params.delete('page');
 		goto(`/purchasing?${params}`);
 	}
@@ -45,7 +46,7 @@
 		{ key: 'supplier_name', label: t('purchasing.supplier') },
 		{ key: 'item_count', label: t('purchasing.itemCount'), width: '80px', numeric: true },
 		{ key: 'status', label: t('purchasing.status'), width: '110px' },
-		{ key: 'user_name', label: t('purchasing.person'), width: '110px' },
+		{ key: 'user_name', label: t('purchasing.person'), width: '110px' }
 	]);
 </script>
 

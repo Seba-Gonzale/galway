@@ -19,7 +19,10 @@ export async function loadReports(ctx: ServiceCtx) {
 				const [row] = await ctx.db
 					.select({ total: sum(schema.receivingSlipDetails.quantity) })
 					.from(schema.receivingSlipDetails)
-					.innerJoin(schema.receivingSlips, eq(schema.receivingSlipDetails.slip_id, schema.receivingSlips.id))
+					.innerJoin(
+						schema.receivingSlips,
+						eq(schema.receivingSlipDetails.slip_id, schema.receivingSlips.id)
+					)
 					.where(like(schema.receivingSlips.received_at, `${m.prefix}%`));
 				return { label: m.label, value: Number(row?.total ?? 0) };
 			})
@@ -29,7 +32,10 @@ export async function loadReports(ctx: ServiceCtx) {
 				const [row] = await ctx.db
 					.select({ total: sum(schema.shippingSlipDetails.quantity) })
 					.from(schema.shippingSlipDetails)
-					.innerJoin(schema.shippingSlips, eq(schema.shippingSlipDetails.slip_id, schema.shippingSlips.id))
+					.innerJoin(
+						schema.shippingSlips,
+						eq(schema.shippingSlipDetails.slip_id, schema.shippingSlips.id)
+					)
 					.where(like(schema.shippingSlips.shipped_at, `${m.prefix}%`));
 				return { label: m.label, value: Number(row?.total ?? 0) };
 			})
@@ -39,7 +45,7 @@ export async function loadReports(ctx: ServiceCtx) {
 				product_code: schema.products.code,
 				product_name: schema.products.name,
 				unit: schema.products.unit,
-				total_shipped: sum(schema.shippingSlipDetails.quantity),
+				total_shipped: sum(schema.shippingSlipDetails.quantity)
 			})
 			.from(schema.shippingSlipDetails)
 			.innerJoin(schema.products, eq(schema.shippingSlipDetails.product_id, schema.products.id))
@@ -49,19 +55,19 @@ export async function loadReports(ctx: ServiceCtx) {
 		ctx.db
 			.select({
 				supplier_name: schema.suppliers.name,
-				slip_count: count(schema.receivingSlips.id),
+				slip_count: count(schema.receivingSlips.id)
 			})
 			.from(schema.receivingSlips)
 			.innerJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
 			.groupBy(schema.suppliers.id)
 			.orderBy(desc(count(schema.receivingSlips.id)))
-			.limit(10),
+			.limit(10)
 	]);
 
 	return {
 		receivingByMonth,
 		shippingByMonth,
 		topProducts: topProducts.map((p) => ({ ...p, total_shipped: Number(p.total_shipped ?? 0) })),
-		supplierRanking,
+		supplierRanking
 	};
 }

@@ -11,12 +11,7 @@
 		onclose?: () => void;
 	}
 
-	let {
-		open = $bindable(false),
-		title,
-		onimport,
-		onclose
-	}: Props = $props();
+	let { open = $bindable(false), title, onimport, onclose }: Props = $props();
 
 	const resolvedTitle = $derived(title ?? t('csvDialog.defaultTitle'));
 
@@ -125,7 +120,10 @@
 					</div>
 					<button
 						class="clear-btn"
-						onclick={(e) => { e.stopPropagation(); clearFile(); }}
+						onclick={(e) => {
+							e.stopPropagation();
+							clearFile();
+						}}
 						aria-label={t('csvDialog.deleteFile')}
 					>
 						<X size={16} />

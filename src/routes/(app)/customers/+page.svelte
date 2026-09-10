@@ -54,7 +54,7 @@
 		{ key: 'tel', label: t('customers.phone'), width: '140px' },
 		{ key: 'address', label: t('customers.address') },
 		{ key: 'email', label: t('customers.email'), width: '200px' },
-		{ key: 'slip_count', label: t('customers.shippingCount'), width: '100px', numeric: true },
+		{ key: 'slip_count', label: t('customers.shippingCount'), width: '100px', numeric: true }
 	]);
 </script>
 
@@ -91,12 +91,18 @@
 </div>
 
 <!-- Create / Edit Modal -->
-<Modal bind:open={showModal} title={editing ? t('customers.editTitle') : t('customers.createTitle')} size="md">
+<Modal
+	bind:open={showModal}
+	title={editing ? t('customers.editTitle') : t('customers.createTitle')}
+	size="md"
+>
 	<form
 		method="POST"
 		action={editing ? '?/update' : '?/create'}
 		class="form"
-		onsubmit={() => { errorMessage = null; }}
+		onsubmit={() => {
+			errorMessage = null;
+		}}
 	>
 		{#if editing}
 			<input type="hidden" name="id" value={editing.id} />
@@ -109,7 +115,12 @@
 		<div class="form-grid">
 			<div class="field full">
 				<Label required>{t('customers.customerName')}</Label>
-				<Input name="name" bind:value={name} placeholder={t('customers.namePlaceholder')} required />
+				<Input
+					name="name"
+					bind:value={name}
+					placeholder={t('customers.namePlaceholder')}
+					required
+				/>
 			</div>
 			<div class="field">
 				<Label>{t('customers.phone')}</Label>

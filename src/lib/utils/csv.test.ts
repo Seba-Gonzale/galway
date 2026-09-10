@@ -37,9 +37,15 @@ describe('generateCSV', () => {
 	});
 
 	it('produces header row followed by data rows', () => {
-		expect(generateCSV(['Name', 'Age'], [['Alice', '30'], ['Bob', '25']])).toBe(
-			'Name,Age\nAlice,30\nBob,25'
-		);
+		expect(
+			generateCSV(
+				['Name', 'Age'],
+				[
+					['Alice', '30'],
+					['Bob', '25']
+				]
+			)
+		).toBe('Name,Age\nAlice,30\nBob,25');
 	});
 
 	it('escapes commas in cell values', () => {

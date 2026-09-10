@@ -21,6 +21,10 @@ export const actions = {
 		const f = await request.formData();
 		const file = f.get('file') as File | null;
 		if (!file) return { success: false, error: 'No file selected' };
-		return importInventory(makeCtx(platform!, locals), await file.text(), f.get('mode')?.toString() ?? '');
-	},
+		return importInventory(
+			makeCtx(platform!, locals),
+			await file.text(),
+			f.get('mode')?.toString() ?? ''
+		);
+	}
 } satisfies Actions;

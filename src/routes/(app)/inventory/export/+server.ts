@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ platform, locals, url }) => {
 		item.product_name,
 		String(item.quantity ?? 0),
 		item.unit,
-		item.updated_at ?? '',
+		item.updated_at ?? ''
 	]);
 
 	const csv = '﻿' + generateCSV(headers, rows);
@@ -25,7 +25,7 @@ export const GET: RequestHandler = async ({ platform, locals, url }) => {
 	return new Response(csv, {
 		headers: {
 			'Content-Type': 'text/csv; charset=utf-8',
-			'Content-Disposition': `attachment; filename="inventory-${timestamp}.csv"`,
-		},
+			'Content-Disposition': `attachment; filename="inventory-${timestamp}.csv"`
+		}
 	});
 };

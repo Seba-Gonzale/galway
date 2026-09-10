@@ -81,7 +81,9 @@
 		</div>
 
 		<div class="form-actions">
-			<Button type="button" variant="secondary" onclick={() => (open = false)}>{t('common.cancel')}</Button>
+			<Button type="button" variant="secondary" onclick={() => (open = false)}
+				>{t('common.cancel')}</Button
+			>
 			<Button type="submit" variant="primary">{t('common.save')}</Button>
 		</div>
 	</form>

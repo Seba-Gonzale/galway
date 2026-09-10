@@ -2,13 +2,7 @@ import { getDb } from '$lib/server/db';
 import * as schema from '$lib/server/db/schema';
 
 export type AuditAction =
-	| 'create'
-	| 'update'
-	| 'delete'
-	| 'import'
-	| 'status_change'
-	| 'stocktake'
-	| 'settings_save';
+	'create' | 'update' | 'delete' | 'import' | 'status_change' | 'stocktake' | 'settings_save';
 
 export type AuditTargetType =
 	| 'product'
@@ -41,7 +35,7 @@ export async function logAudit({
 	target_type,
 	target_id,
 	target_label,
-	detail,
+	detail
 }: AuditParams): Promise<void> {
 	try {
 		await db.insert(schema.auditLogs).values({
@@ -51,11 +45,10 @@ export async function logAudit({
 			target_type,
 			target_id: target_id ?? null,
 			target_label: target_label ?? null,
-			detail: detail ? JSON.stringify(detail) : null,
+			detail: detail ? JSON.stringify(detail) : null
 		});
 	} catch (err) {
 		// ログ失敗はメイン処理に影響させない
 		console.error('Audit log write failed:', err);
 	}
 }
-

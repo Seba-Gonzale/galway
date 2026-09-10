@@ -7,7 +7,9 @@
 	const maxReceiving = $derived(Math.max(...data.receivingByMonth.map((m) => m.value), 1));
 	const maxShipping = $derived(Math.max(...data.shippingByMonth.map((m) => m.value), 1));
 	const maxTopQty = $derived(Math.max(...data.topProducts.map((p) => p.total_shipped), 1));
-	const maxSlipCount = $derived(Math.max(...data.supplierRanking.map((s) => Number(s.slip_count)), 1));
+	const maxSlipCount = $derived(
+		Math.max(...data.supplierRanking.map((s) => Number(s.slip_count)), 1)
+	);
 </script>
 
 <svelte:head>
@@ -67,7 +69,10 @@
 								<span class="rank-code">{p.product_code}</span>
 							</div>
 							<div class="rank-bar-wrap">
-								<div class="rank-bar rank-bar-shipping" style:width="{(p.total_shipped / maxTopQty) * 100}%"></div>
+								<div
+									class="rank-bar rank-bar-shipping"
+									style:width="{(p.total_shipped / maxTopQty) * 100}%"
+								></div>
 							</div>
 							<span class="rank-value">{p.total_shipped.toLocaleString('ja-JP')} {p.unit}</span>
 						</div>
@@ -90,7 +95,10 @@
 								<span class="rank-name">{s.supplier_name}</span>
 							</div>
 							<div class="rank-bar-wrap">
-								<div class="rank-bar rank-bar-receiving" style:width="{(Number(s.slip_count) / maxSlipCount) * 100}%"></div>
+								<div
+									class="rank-bar rank-bar-receiving"
+									style:width="{(Number(s.slip_count) / maxSlipCount) * 100}%"
+								></div>
 							</div>
 							<span class="rank-value">{s.slip_count} {t('reports.slipCount')}</span>
 						</div>

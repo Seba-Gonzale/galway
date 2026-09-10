@@ -49,9 +49,7 @@
 
 	const primaryNavGroups = $derived<NavGroup[]>([
 		{
-			items: [
-				{ href: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
-			],
+			items: [{ href: '/', label: t('nav.dashboard'), icon: LayoutDashboard }]
 		},
 		{
 			groupLabel: t('nav.groupMaster'),
@@ -59,16 +57,16 @@
 				{ href: '/suppliers', label: t('nav.suppliers'), icon: Building2 },
 				{ href: '/products', label: t('nav.products'), icon: Package },
 				{ href: '/categories', label: t('nav.categories'), icon: Tag },
-				{ href: '/customers', label: t('nav.customers'), icon: MapPin },
-			],
+				{ href: '/customers', label: t('nav.customers'), icon: MapPin }
+			]
 		},
 		{
 			groupLabel: t('nav.groupTransactions'),
 			items: [
 				{ href: '/purchasing', label: t('nav.purchasing'), icon: ClipboardSignature },
 				{ href: '/receiving', label: t('nav.receiving'), icon: PackageCheck },
-				{ href: '/shipping', label: t('nav.shipping'), icon: Truck },
-			],
+				{ href: '/shipping', label: t('nav.shipping'), icon: Truck }
+			]
 		},
 		{
 			groupLabel: t('nav.groupManagement'),
@@ -77,9 +75,9 @@
 				{ href: '/inventory-schedules', label: t('nav.inventorySchedules'), icon: CalendarCheck },
 				{ href: '/reports', label: t('nav.reports'), icon: BarChart3 },
 				{ href: '/accounts', label: t('nav.accounts'), icon: Shield, adminOnly: true },
-				{ href: '/audit-logs', label: t('nav.auditLogs'), icon: ScrollText, adminOnly: true },
-			],
-		},
+				{ href: '/audit-logs', label: t('nav.auditLogs'), icon: ScrollText, adminOnly: true }
+			]
+		}
 	]);
 
 	const secondaryNavItems = $derived<NavItem[]>([
@@ -160,7 +158,10 @@
 					{#if item.onclick}
 						<button
 							class="nav-item"
-							onclick={() => { item.onclick?.(); closeMobile(); }}
+							onclick={() => {
+								item.onclick?.();
+								closeMobile();
+							}}
 						>
 							<item.icon size={18} class="nav-icon" />
 							<span class="nav-label">{item.label}</span>

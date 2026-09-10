@@ -27,7 +27,7 @@ export const actions = {
 			supplier_id: f.get('supplier_id')?.toString() ?? '',
 			note: f.get('note')?.toString() ?? '',
 			account_id: isAdmin ? f.get('account_id')?.toString() : undefined,
-			details,
+			details
 		});
-	},
+	}
 } satisfies Actions;

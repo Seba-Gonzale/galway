@@ -41,7 +41,8 @@
 		<p class="confirm-message">{message}</p>
 
 		<div class="confirm-actions">
-			<Button type="button" variant="secondary" onclick={handleCancel}>{resolvedCancelLabel}</Button>
+			<Button type="button" variant="secondary" onclick={handleCancel}>{resolvedCancelLabel}</Button
+			>
 			<Button type="button" variant="primary" onclick={handleConfirm}>{confirmLabel}</Button>
 		</div>
 	</div>

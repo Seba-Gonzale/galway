@@ -85,19 +85,27 @@
 		</div>
 
 		<div class="field">
-			<Label for="acct-password">{isEdit ? t('accounts.newPassword') : t('accounts.password')}</Label>
+			<Label for="acct-password"
+				>{isEdit ? t('accounts.newPassword') : t('accounts.password')}</Label
+			>
 			<Input
 				id="acct-password"
 				name="password"
 				type="password"
-				placeholder={isEdit ? t('accounts.passwordPlaceholder') : t('accounts.passwordSetPlaceholder')}
+				placeholder={isEdit
+					? t('accounts.passwordPlaceholder')
+					: t('accounts.passwordSetPlaceholder')}
 				required={!isEdit}
 			/>
 		</div>
 
 		<div class="form-actions">
-			<Button type="button" variant="secondary" onclick={() => (open = false)}>{t('common.cancel')}</Button>
-			<Button type="submit" variant="primary">{isEdit ? t('common.save') : t('common.register')}</Button>
+			<Button type="button" variant="secondary" onclick={() => (open = false)}
+				>{t('common.cancel')}</Button
+			>
+			<Button type="submit" variant="primary"
+				>{isEdit ? t('common.save') : t('common.register')}</Button
+			>
 		</div>
 	</form>
 </Modal>

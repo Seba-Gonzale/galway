@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { Building2, Package, PackageCheck, Truck, AlertTriangle, PackageCheck as InIcon, Truck as OutIcon } from '@lucide/svelte';
+	import {
+		Building2,
+		Package,
+		PackageCheck,
+		Truck,
+		AlertTriangle,
+		PackageCheck as InIcon,
+		Truck as OutIcon
+	} from '@lucide/svelte';
 	import { t } from '$lib/i18n';
 	import type { PageData } from './$types';
 
@@ -8,8 +16,18 @@
 	const stats = $derived([
 		{ label: t('dashboard.suppliers'), value: data.supplierCount, icon: Building2, color: 'blue' },
 		{ label: t('dashboard.products'), value: data.productCount, icon: Package, color: 'green' },
-		{ label: t('dashboard.receivingThisMonth'), value: data.receivingCountThisMonth, icon: PackageCheck, color: 'orange' },
-		{ label: t('dashboard.shippingThisMonth'), value: data.shippingCountThisMonth, icon: Truck, color: 'gray' }
+		{
+			label: t('dashboard.receivingThisMonth'),
+			value: data.receivingCountThisMonth,
+			icon: PackageCheck,
+			color: 'orange'
+		},
+		{
+			label: t('dashboard.shippingThisMonth'),
+			value: data.shippingCountThisMonth,
+			icon: Truck,
+			color: 'gray'
+		}
 	]);
 </script>
 
@@ -114,7 +132,9 @@
 		<div class="low-stock-section">
 			<div class="low-stock-header">
 				<AlertTriangle size={18} />
-				<h2 class="low-stock-title">{t('dashboard.lowStockAlert')}（{data.lowStockItems.length}{t('common.items')}）</h2>
+				<h2 class="low-stock-title">
+					{t('dashboard.lowStockAlert')}（{data.lowStockItems.length}{t('common.items')}）
+				</h2>
 			</div>
 			<div class="low-stock-table-wrap">
 				<table class="low-stock-table">
@@ -180,10 +200,22 @@
 		border-radius: var(--radius-lg);
 		flex-shrink: 0;
 
-		&.blue   { background-color: var(--color-primary-light);  color: var(--color-primary); }
-		&.green  { background-color: var(--color-success-light);  color: var(--color-success); }
-		&.orange { background-color: var(--color-warning-light);  color: var(--color-warning); }
-		&.gray   { background-color: var(--color-bg-sunken);      color: var(--color-text-secondary); }
+		&.blue {
+			background-color: var(--color-primary-light);
+			color: var(--color-primary);
+		}
+		&.green {
+			background-color: var(--color-success-light);
+			color: var(--color-success);
+		}
+		&.orange {
+			background-color: var(--color-warning-light);
+			color: var(--color-warning);
+		}
+		&.gray {
+			background-color: var(--color-bg-sunken);
+			color: var(--color-text-secondary);
+		}
 	}
 
 	.stat-info {
@@ -269,7 +301,9 @@
 			white-space: nowrap;
 			background-color: var(--color-bg-sunken);
 
-			&.num { text-align: right; }
+			&.num {
+				text-align: right;
+			}
 		}
 
 		td {
@@ -286,7 +320,9 @@
 				text-decoration: none;
 				font-weight: 500;
 
-				&:hover { text-decoration: underline; }
+				&:hover {
+					text-decoration: underline;
+				}
 			}
 		}
 
@@ -302,7 +338,9 @@
 			flex-shrink: 0;
 		}
 
-		tr:last-child td { border-bottom: none; }
+		tr:last-child td {
+			border-bottom: none;
+		}
 	}
 
 	.low-stock-section {
@@ -345,23 +383,35 @@
 			border-bottom: 1px solid var(--color-border-light);
 			white-space: nowrap;
 
-			&.num { text-align: right; }
+			&.num {
+				text-align: right;
+			}
 		}
 
 		td {
 			padding: var(--space-sm) var(--space-lg);
 			border-bottom: 1px solid var(--color-border-light);
 
-			&.num { text-align: right; font-variant-numeric: tabular-nums; }
-			&.low { color: var(--color-danger, #f97316); font-weight: 600; }
+			&.num {
+				text-align: right;
+				font-variant-numeric: tabular-nums;
+			}
+			&.low {
+				color: var(--color-danger, #f97316);
+				font-weight: 600;
+			}
 
 			a {
 				color: var(--color-primary);
 				text-decoration: none;
-				&:hover { text-decoration: underline; }
+				&:hover {
+					text-decoration: underline;
+				}
 			}
 		}
 
-		tr:last-child td { border-bottom: none; }
+		tr:last-child td {
+			border-bottom: none;
+		}
 	}
 </style>

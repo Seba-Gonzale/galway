@@ -24,7 +24,7 @@
 	function formatValue(col: Column, val: unknown): string {
 		if (col.numeric) {
 			return Number(val).toLocaleString('ja-JP');
-		}		
+		}
 		return String(val ?? '');
 	}
 </script>
@@ -34,7 +34,9 @@
 		<thead>
 			<tr>
 				{#each columns as col (col.key)}
-					<th style:width={col.width} style:text-align={col.numeric ? 'right' : undefined}>{col.label}</th>
+					<th style:width={col.width} style:text-align={col.numeric ? 'right' : undefined}
+						>{col.label}</th
+					>
 				{/each}
 				{#if actions}
 					<th class="actions-header" style:width="100px">{t('common.actions')}</th>
@@ -59,9 +61,9 @@
 					{:else}
 						<tr
 							class:clickable={!!onrowclick && !actions}
-							onclick={() => (!actions && onrowclick) ? onrowclick(item) : undefined}
-							role={(!actions && onrowclick) ? 'button' : undefined}
-							tabindex={(!actions && onrowclick) ? 0 : undefined}
+							onclick={() => (!actions && onrowclick ? onrowclick(item) : undefined)}
+							role={!actions && onrowclick ? 'button' : undefined}
+							tabindex={!actions && onrowclick ? 0 : undefined}
 						>
 							{#each columns as col (col.key)}
 								<td style:text-align={col.numeric ? 'right' : undefined}>

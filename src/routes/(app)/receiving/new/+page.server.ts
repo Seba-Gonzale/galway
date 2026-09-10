@@ -25,7 +25,7 @@ export const actions = {
 			received_at: f.get('received_at')?.toString() ?? '',
 			supplier_id: f.get('supplier_id')?.toString() ?? '',
 			note: f.get('note')?.toString() ?? '',
-			details,
+			details
 		});
-	},
+	}
 } satisfies Actions;

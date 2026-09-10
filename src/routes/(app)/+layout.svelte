@@ -15,7 +15,9 @@
 	title={t('nav.signOut')}
 	message={t('nav.signOut') + '?'}
 	confirmLabel={t('nav.signOut')}
-	onconfirm={() => { window.location.href = '/logout'; }}
+	onconfirm={() => {
+		window.location.href = '/logout';
+	}}
 />
 
 <div class="app-shell">

@@ -20,7 +20,7 @@ const ja: Dict = {
 		auditLogs: '操作ログ',
 		settings: '設定',
 		profile: 'プロフィール',
-		signOut: 'サインアウト',
+		signOut: 'サインアウト'
 	},
 	common: {
 		save: '保存',
@@ -54,14 +54,14 @@ const ja: Dict = {
 		noData: 'データなし',
 		error: 'エラー',
 		search: '検索',
-		actions: '操作',
+		actions: '操作'
 	},
 	login: {
 		pageTitle: 'サインイン — Galway',
 		subtitle: 'アカウントにサインイン',
 		email: 'メールアドレス',
 		password: 'パスワード',
-		signIn: 'サインイン',
+		signIn: 'サインイン'
 	},
 	dashboard: {
 		pageTitle: 'ダッシュボード — Galway',
@@ -83,7 +83,7 @@ const ja: Dict = {
 		productCode: '商品コード',
 		productName: '商品名',
 		currentStock: '現在庫',
-		minStock: '最低在庫数',
+		minStock: '最低在庫数'
 	},
 	suppliers: {
 		pageTitle: '仕入先管理 — Galway',
@@ -100,7 +100,7 @@ const ja: Dict = {
 		searchPlaceholder: '仕入先名で検索...',
 		manageProducts: '取扱商品',
 		linkedProducts: '取扱商品',
-		productsSaved: '取扱商品を更新しました。',
+		productsSaved: '取扱商品を更新しました。'
 	},
 	products: {
 		pageTitle: '商品管理 — Galway',
@@ -116,7 +116,7 @@ const ja: Dict = {
 		createTitle: '商品登録',
 		deleteConfirm: 'この商品を削除しますか？',
 		empty: '商品が登録されていません',
-		searchPlaceholder: 'コード・商品名で検索...',
+		searchPlaceholder: 'コード・商品名で検索...'
 	},
 	categories: {
 		pageTitle: 'カテゴリ管理 — Galway',
@@ -129,7 +129,7 @@ const ja: Dict = {
 		deleteMessage: '商品のカテゴリは未設定になります。',
 		empty: 'カテゴリが登録されていません',
 		namePlaceholder: '例: 電子部品',
-		descriptionPlaceholder: 'カテゴリの説明（任意）',
+		descriptionPlaceholder: 'カテゴリの説明（任意）'
 	},
 	purchasing: {
 		pageTitle: '発注管理 — Galway',
@@ -174,10 +174,11 @@ const ja: Dict = {
 		receivedAt: '入荷日',
 		orderedQty: '発注数',
 		actualQty: '実入荷数',
-		createReceivingSlipHint: '未入荷の商品は0を入力してください（分割入荷対応）。ステータスは自動で変更されません。',
+		createReceivingSlipHint:
+			'未入荷の商品は0を入力してください（分割入荷対応）。ステータスは自動で変更されません。',
 		receivedQtySummary: '入荷実数',
 		totalReceived: '入荷数合計',
-		diff: '差分',
+		diff: '差分'
 	},
 	receiving: {
 		pageTitle: '入荷管理 — Galway',
@@ -201,7 +202,7 @@ const ja: Dict = {
 		productCode: '商品コード',
 		productName: '商品名',
 		quantity: '数量',
-		unit: '単位',
+		unit: '単位'
 	},
 	shipping: {
 		pageTitle: '出荷管理 — Galway',
@@ -234,7 +235,7 @@ const ja: Dict = {
 		sigShipping: '出荷確認',
 		sigReceiving: '受領確認',
 		printedAt: '印刷日時:',
-		printButton: '印刷',
+		printButton: '印刷'
 	},
 	customers: {
 		pageTitle: '出荷先管理 — Galway',
@@ -250,7 +251,7 @@ const ja: Dict = {
 		empty: '出荷先が登録されていません',
 		namePlaceholder: '〇〇株式会社',
 		zipcode: '郵便番号',
-		fax: 'FAX',
+		fax: 'FAX'
 	},
 	inventory: {
 		pageTitle: '在庫管理 — Galway',
@@ -267,7 +268,7 @@ const ja: Dict = {
 		product: '商品',
 		stocktakeQty: '実在庫数',
 		searchPlaceholder: '商品名・コードで検索...',
-		empty: '在庫データがありません',
+		empty: '在庫データがありません'
 	},
 	inventorySchedules: {
 		pageTitle: '棚卸スケジュール — Galway',
@@ -292,7 +293,7 @@ const ja: Dict = {
 		titleLabel: 'タイトル',
 		titlePlaceholder: '例: 月次棚卸',
 		scheduledAtLabel: '予定日',
-		noteLabel: '備考',
+		noteLabel: '備考'
 	},
 	reports: {
 		pageTitle: 'レポート — Galway',
@@ -302,7 +303,7 @@ const ja: Dict = {
 		topShippingProducts: '出荷数量トップ商品',
 		supplierRanking: '仕入先別入荷件数',
 		noData: 'データがありません',
-		slipCount: '件',
+		slipCount: '件'
 	},
 	accounts: {
 		pageTitle: 'アカウント管理 — Galway',
@@ -322,7 +323,7 @@ const ja: Dict = {
 		namePlaceholder: '氏名を入力',
 		deleteConfirm: 'このアカウントを削除しますか？',
 		empty: 'アカウントが登録されていません',
-		searchPlaceholder: '名前・メールで検索...',
+		searchPlaceholder: '名前・メールで検索...'
 	},
 	auditLogs: {
 		pageTitle: '操作ログ — Galway',
@@ -352,7 +353,7 @@ const ja: Dict = {
 		targetCategory: 'カテゴリ',
 		targetAccount: 'アカウント',
 		targetSettings: '設定',
-		empty: '操作ログがありません',
+		empty: '操作ログがありません'
 	},
 	settings: {
 		pageTitle: '設定 — Galway',
@@ -365,11 +366,13 @@ const ja: Dict = {
 		themeSystem: 'システム',
 		stockAlert: '在庫アラート',
 		lowStockAlert: '低在庫アラート',
-		lowStockDescPre: '在庫数が商品ごとの「最低在庫数」を下回った場合にダッシュボードで警告を表示します。最低在庫数の設定は',
+		lowStockDescPre:
+			'在庫数が商品ごとの「最低在庫数」を下回った場合にダッシュボードで警告を表示します。最低在庫数の設定は',
 		lowStockDescLink: '商品管理',
 		notifications: '管理者アラート',
 		emailNotification: 'メールアラート',
-		emailNotificationDesc: '低在庫アラートを管理者メールアドレスに送信します。本番環境では Cloudflare Email、ローカルでは設定済みHTTPプロバイダーを使用します。',
+		emailNotificationDesc:
+			'低在庫アラートを管理者メールアドレスに送信します。本番環境では Cloudflare Email、ローカルでは設定済みHTTPプロバイダーを使用します。',
 		notificationEmail: 'アラート送信先メールアドレス',
 		notificationEmailDesc: '管理者アラート（低在庫など）の送信先メールアドレスです。',
 		emailLocale: 'メール言語',
@@ -377,13 +380,15 @@ const ja: Dict = {
 		testEmail: 'テストメール送信',
 		testEmailSent: 'テストメールを送信しました。',
 		emailProvider: 'アカウント通知',
-		emailProviderDesc: 'ウェルカムメールやパスワード変更通知などのアカウント向けメールに使用するプロバイダーです。環境変数で設定します。',
+		emailProviderDesc:
+			'ウェルカムメールやパスワード変更通知などのアカウント向けメールに使用するプロバイダーです。環境変数で設定します。',
 		emailProviderLabel: '現在のプロバイダー',
-		emailProviderNotConfigured: '未設定 — .dev.vars または wrangler secrets に EMAIL_PROVIDER と EMAIL_FROM を設定してください。',
+		emailProviderNotConfigured:
+			'未設定 — .dev.vars または wrangler secrets に EMAIL_PROVIDER と EMAIL_FROM を設定してください。',
 		saved: '設定を保存しました。',
 		language: '言語',
 		languageDesc: 'アプリケーションの表示言語を選択します。',
-		save: '保存',
+		save: '保存'
 	},
 	profile: {
 		pageTitle: 'プロフィール — Galway',
@@ -404,14 +409,14 @@ const ja: Dict = {
 		newPassword: '新しいパスワード',
 		newPasswordHint: '変更しない場合は空欄',
 		save: '保存',
-		savedSuccessfully: '保存しました。',
+		savedSuccessfully: '保存しました。'
 	},
 	pagination: {
 		info: '全 {total} 件中 {start}-{end} 件目 / {current} ページ目（全 {pages} ページ）',
 		first: '最初のページへ',
 		previous: '前のページへ',
 		next: '次のページへ',
-		last: '最後のページへ',
+		last: '最後のページへ'
 	},
 	slipForm: {
 		receivedAt: '入荷日',
@@ -437,7 +442,7 @@ const ja: Dict = {
 		csvImportError: 'CSV取り込みエラー:',
 		csvNoValidRows: '有効なデータがありませんでした。',
 		csvUnknownCode: '不明な商品コード: {code}',
-		csvInvalidQty: '{row}行目の数量が無効です: {value}',
+		csvInvalidQty: '{row}行目の数量が無効です: {value}'
 	},
 	csvDialog: {
 		defaultTitle: 'CSVインポート',
@@ -459,8 +464,8 @@ const ja: Dict = {
 		quantity: '数量',
 		example: '例: PRD001, アルミフレーム A型, 100',
 		selectSupplier: '仕入先を選択',
-		deleteFile: 'ファイルを削除',
-	},
+		deleteFile: 'ファイルを削除'
+	}
 };
 
 export default ja;

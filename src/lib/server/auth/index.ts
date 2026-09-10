@@ -80,7 +80,9 @@ export async function createSession(d1: D1Database, accountId: string): Promise<
 	const token = toHex(tokenBytes.buffer as ArrayBuffer);
 	const expiresAt = new Date(Date.now() + SESSION_EXPIRY_MS).toISOString();
 	const db = drizzle(d1, { schema });
-	await db.insert(schema.sessions).values({ id: token, account_id: accountId, expires_at: expiresAt });
+	await db
+		.insert(schema.sessions)
+		.values({ id: token, account_id: accountId, expires_at: expiresAt });
 	return token;
 }
 
@@ -89,7 +91,10 @@ export async function deleteSession(d1: D1Database, token: string): Promise<void
 	await db.delete(schema.sessions).where(eq(schema.sessions.id, token));
 }
 
-export async function deleteAllSessionsForAccount(d1: D1Database, accountId: string): Promise<void> {
+export async function deleteAllSessionsForAccount(
+	d1: D1Database,
+	accountId: string
+): Promise<void> {
 	const db = drizzle(d1, { schema });
 	await db.delete(schema.sessions).where(eq(schema.sessions.account_id, accountId));
 }

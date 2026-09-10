@@ -30,7 +30,14 @@
 		oncancel?: () => void;
 	}
 
-	let { products, customers = [], accounts = [], isAdmin = false, initialData, oncancel }: Props = $props();
+	let {
+		products,
+		customers = [],
+		accounts = [],
+		isAdmin = false,
+		initialData,
+		oncancel
+	}: Props = $props();
 
 	const isEdit = $derived(!!initialData?.id);
 	const action = $derived(isEdit ? '?/update' : '?/create');
@@ -42,7 +49,7 @@
 	const accountOptions = $derived(accounts.map((a) => ({ value: a.id, label: a.name })));
 	const customerOptions = $derived([
 		{ value: '', label: t('slipForm.notAssigned') },
-		...customers.map((c) => ({ value: c.id, label: c.name })),
+		...customers.map((c) => ({ value: c.id, label: c.name }))
 	]);
 
 	let date = $state('');
@@ -57,7 +64,10 @@
 			customerId = initialData.customer_id ?? '';
 			accountId = initialData.account_id;
 			note = initialData.note ?? '';
-			details = initialData.details.map((d) => ({ product_id: d.product_id, quantity: d.quantity }));
+			details = initialData.details.map((d) => ({
+				product_id: d.product_id,
+				quantity: d.quantity
+			}));
 		} else {
 			date = new Date().toISOString().slice(0, 10);
 			customerId = '';

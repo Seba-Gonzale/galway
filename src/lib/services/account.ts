@@ -1,7 +1,12 @@
 import { fail, error } from '@sveltejs/kit';
 import { eq, desc, or, like, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { hashPassword, verifyPassword, deleteAllSessionsForAccount, createSession } from '$lib/server/auth';
+import {
+	hashPassword,
+	verifyPassword,
+	deleteAllSessionsForAccount,
+	createSession
+} from '$lib/server/auth';
 import { accountCreateSchema, accountUpdateSchema, profileUpdateSchema } from '$lib/validation';
 import { sendWelcomeEmail, sendPasswordChangedEmail } from '$lib/services/email';
 import type { ServiceCtx } from '$lib/services';

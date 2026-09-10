@@ -104,7 +104,9 @@
 				<div class="detail-row">
 					<dt>{t('profile.role')}</dt>
 					<dd>
-						<span class="role-badge {data.account?.role === 'admin' ? 'role-admin' : 'role-general'}">
+						<span
+							class="role-badge {data.account?.role === 'admin' ? 'role-admin' : 'role-general'}"
+						>
 							{data.account?.role === 'admin' ? t('accounts.roleAdmin') : t('accounts.roleGeneral')}
 						</span>
 					</dd>

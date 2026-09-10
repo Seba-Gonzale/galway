@@ -23,12 +23,12 @@
 		planned: t('inventorySchedules.statusPlanned'),
 		in_progress: t('inventorySchedules.statusInProgress'),
 		completed: t('inventorySchedules.statusCompleted'),
-		cancelled: t('inventorySchedules.statusCancelled'),
+		cancelled: t('inventorySchedules.statusCancelled')
 	});
 
 	const STATUS_NEXT = $derived<Record<string, { label: string; next: string }>>({
 		planned: { label: t('inventorySchedules.actionStart'), next: 'in_progress' },
-		in_progress: { label: t('inventorySchedules.actionComplete'), next: 'completed' },
+		in_progress: { label: t('inventorySchedules.actionComplete'), next: 'completed' }
 	});
 
 	function openCreate() {
@@ -65,7 +65,7 @@
 		{ key: 'scheduled_at', label: t('inventorySchedules.scheduledAt'), width: '120px' },
 		{ key: 'title', label: t('inventorySchedules.scheduleTitle') },
 		{ key: 'status', label: t('inventorySchedules.status'), width: '110px' },
-		{ key: 'note', label: t('inventorySchedules.note') },
+		{ key: 'note', label: t('inventorySchedules.note') }
 	]);
 </script>
 
@@ -96,12 +96,21 @@
 			<div class="row-actions">
 				{#if STATUS_NEXT[row.status]}
 					{@const next = STATUS_NEXT[row.status]}
-					<Button variant="secondary" size="sm" onclick={() => openStatusDialog(row.id, next.label, next.next)}>
+					<Button
+						variant="secondary"
+						size="sm"
+						onclick={() => openStatusDialog(row.id, next.label, next.next)}
+					>
 						{next.label}
 					</Button>
 				{/if}
 				{#if row.status === 'in_progress'}
-					<Button variant="ghost" size="sm" onclick={() => openStatusDialog(row.id, t('inventorySchedules.actionRevertPlanned'), 'planned')}>
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() =>
+							openStatusDialog(row.id, t('inventorySchedules.actionRevertPlanned'), 'planned')}
+					>
 						{t('inventorySchedules.actionRevertPlanned')}
 					</Button>
 				{/if}
@@ -128,7 +137,12 @@
 	<form method="POST" action="?/create" class="form">
 		<div class="field">
 			<Label required>{t('inventorySchedules.titleLabel')}</Label>
-			<Input name="title" bind:value={title} placeholder={t('inventorySchedules.titlePlaceholder')} required />
+			<Input
+				name="title"
+				bind:value={title}
+				placeholder={t('inventorySchedules.titlePlaceholder')}
+				required
+			/>
 		</div>
 		<div class="field">
 			<Label required>{t('inventorySchedules.scheduledAtLabel')}</Label>
@@ -152,7 +166,10 @@
 <ConfirmDialog
 	bind:open={showStatusDialog}
 	title={pendingStatusChange?.label ?? ''}
-	message={t('inventorySchedules.statusChangeConfirm').replace('{label}', pendingStatusChange?.label ?? '')}
+	message={t('inventorySchedules.statusChangeConfirm').replace(
+		'{label}',
+		pendingStatusChange?.label ?? ''
+	)}
 	confirmLabel={pendingStatusChange?.label ?? ''}
 	cancelLabel={t('common.cancel')}
 	onconfirm={() => changeStatus(pendingStatusChange?.id ?? '', pendingStatusChange?.next ?? '')}

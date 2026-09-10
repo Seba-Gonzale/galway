@@ -4,31 +4,34 @@ A simple procurement management system for centrally managing suppliers, product
 
 ## Tech Stack
 
-| Item | Details |
-|------|---------|
-| Framework | SvelteKit 2 + Svelte 5 |
-| Deployment | Cloudflare Pages / Workers |
-| Database | Cloudflare D1 (SQLite) |
-| ORM | Drizzle ORM |
-| Package Manager | Bun |
+| Item            | Details                    |
+| --------------- | -------------------------- |
+| Framework       | SvelteKit 2 + Svelte 5     |
+| Deployment      | Cloudflare Pages / Workers |
+| Database        | Cloudflare D1 (SQLite)     |
+| ORM             | Drizzle ORM                |
+| Package Manager | Bun                        |
 
 ---
 
 ## Features
 
 ### Dashboard (`/`)
+
 - Summary cards: supplier count, product count, receiving count, shipping count
 - **Today's Receiving**: purchase order details with status `ordered` and today as the expected arrival date
 - **Today's Shipping**: shipping slip details with today as the ship date
 - **Low Stock Alert**: products where current stock is below the minimum quantity (can be toggled in Settings)
 
 ### Suppliers (`/suppliers`)
+
 - List, create, edit, and delete suppliers
 - Search by supplier name
 - CSV import (append / replace mode) and CSV export
 - Fields: supplier name, phone, fax, zip code, address, email
 
 ### Products (`/products`)
+
 - List, create, edit, and delete products
 - Search by product code or name; filter by category
 - CSV import (append / replace mode) and CSV export
@@ -36,10 +39,12 @@ A simple procurement management system for centrally managing suppliers, product
 - Automatically creates an inventory record (quantity 0) when a product is registered
 
 ### Categories (`/categories`)
+
 - List, create, edit, and delete categories
 - Shows product count per category
 
 ### Purchasing (`/purchasing`)
+
 - List, create, view, and edit purchase orders
 - Status workflow: `Draft` → `Ordered` → `Received` / `Cancelled`
 - Order numbers: `PO-YYYY-NNN` format (auto-generated within a transaction)
@@ -48,6 +53,7 @@ A simple procurement management system for centrally managing suppliers, product
 - **Received Qty Summary**: per-product breakdown of ordered vs. total received quantities and the difference
 
 ### Receiving (`/receiving`)
+
 - List, create, view, edit, and delete receiving slips
 - Slip numbers: `RCV-YYYY-NNN` format (auto-generated)
 - Receiving increases inventory (UPSERT)
@@ -56,6 +62,7 @@ A simple procurement management system for centrally managing suppliers, product
 - Admins can change the person in charge
 
 ### Shipping (`/shipping`)
+
 - List, create, view, edit, and delete shipping slips
 - Slip numbers: `SHP-YYYY-NNN` format (auto-generated)
 - Shipping decreases inventory
@@ -66,10 +73,12 @@ A simple procurement management system for centrally managing suppliers, product
 - Admins can change the person in charge
 
 ### Customers (`/customers`)
+
 - List, create, edit, and delete customers (ship-to)
 - Fields: customer name, phone, fax, zip code, address, email
 
 ### Inventory (`/inventory`)
+
 - View current stock for all products
 - Search by product code or name
 - Highlights products below minimum stock in warning color
@@ -77,25 +86,30 @@ A simple procurement management system for centrally managing suppliers, product
 - CSV import (bulk update stock quantities) and CSV export
 
 ### Stocktake Schedule (`/inventory-schedules`)
+
 - List, create, and view stocktake schedules
 - Status management: `Planned` → `In Progress` → `Completed`
 
 ### Reports (`/reports`)
+
 - Bar charts for receiving and shipping trends over the past 6 months
 - Top 10 products by shipping quantity
 - Receiving count ranking by supplier
 
 ### Accounts (`/accounts`) — Admin only
+
 - List, create, edit, and delete user accounts
 - Roles: `admin` / `general`
 - Cannot delete accounts that are in use (handles foreign key constraint error)
 
 ### Audit Logs (`/audit-logs`) — Admin only
+
 - View audit log of all CRUD operations
 - Filter by action, target, and user
 - Action types: `create` `update` `delete` `import` `stocktake` `status_change` `settings_save`
 
 ### Settings (`/settings`) — Admin only
+
 - Toggle low stock alert on/off
 - Set admin notification email address (for low-stock alerts and other admin alerts)
 - Toggle email alerts on/off
@@ -137,32 +151,32 @@ Open `http://localhost:5173` in your browser.
 
 ## Login Credentials (Development)
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@example.com | admin123 | Admin |
+| Email              | Password   | Role    |
+| ------------------ | ---------- | ------- |
+| admin@example.com  | admin123   | Admin   |
 | suzuki@example.com | general123 | General |
-| sato@example.com | general123 | General |
+| sato@example.com   | general123 | General |
 
 ---
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start development server |
-| `bun run build` | Production build |
-| `bun run preview` | Preview build locally (Wrangler) |
-| `bun run check` | Type check |
-| `bun run lint` | Lint / format check |
-| `bun run format` | Auto-format |
-| `bun run test:unit` | Unit tests (Vitest) |
-| `bun run test:e2e` | E2E tests (Playwright) |
-| `bun run db:generate` | Generate Drizzle migration files |
-| `bun run db:migrate:local` | Apply migrations to local D1 |
-| `bun run db:migrate:remote` | Apply migrations to remote D1 |
-| `bun run db:seed:local` | Seed base data (local) |
-| `bun run db:seed-plan6:local` | Seed additional data (local) |
-| `bun run db:studio` | Start Drizzle Studio |
+| Command                       | Description                      |
+| ----------------------------- | -------------------------------- |
+| `bun run dev`                 | Start development server         |
+| `bun run build`               | Production build                 |
+| `bun run preview`             | Preview build locally (Wrangler) |
+| `bun run check`               | Type check                       |
+| `bun run lint`                | Lint / format check              |
+| `bun run format`              | Auto-format                      |
+| `bun run test:unit`           | Unit tests (Vitest)              |
+| `bun run test:e2e`            | E2E tests (Playwright)           |
+| `bun run db:generate`         | Generate Drizzle migration files |
+| `bun run db:migrate:local`    | Apply migrations to local D1     |
+| `bun run db:migrate:remote`   | Apply migrations to remote D1    |
+| `bun run db:seed:local`       | Seed base data (local)           |
+| `bun run db:seed-plan6:local` | Seed additional data (local)     |
+| `bun run db:studio`           | Start Drizzle Studio             |
 
 ---
 

@@ -20,7 +20,7 @@
 
 <form class="search-bar" onsubmit={handleSubmit}>
 	<Search size={16} />
-	<input class="input" placeholder={placeholder} bind:value  />
+	<input class="input" {placeholder} bind:value />
 	<Button type="submit" variant="secondary" size="sm">{t('common.search')}</Button>
 </form>
 

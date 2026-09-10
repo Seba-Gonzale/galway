@@ -30,7 +30,10 @@ async function deriveSigningKey(
 	region: string,
 	service: string
 ): Promise<ArrayBuffer> {
-	const kDate = await hmacSha256(new TextEncoder().encode(`AWS4${secret}`).buffer as ArrayBuffer, date);
+	const kDate = await hmacSha256(
+		new TextEncoder().encode(`AWS4${secret}`).buffer as ArrayBuffer,
+		date
+	);
 	const kRegion = await hmacSha256(kDate, region);
 	const kService = await hmacSha256(kRegion, service);
 	return hmacSha256(kService, 'aws4_request');
@@ -44,7 +47,11 @@ function toHex(buf: ArrayBuffer): string {
 
 async function signedFetch(url: string, body: string, creds: AwsCredentials): Promise<Response> {
 	const now = new Date();
-	const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').slice(0, 15) + 'Z';
+	const amzDate =
+		now
+			.toISOString()
+			.replace(/[:-]|\.\d{3}/g, '')
+			.slice(0, 15) + 'Z';
 	const dateOnly = amzDate.slice(0, 8);
 
 	const parsedUrl = new URL(url);

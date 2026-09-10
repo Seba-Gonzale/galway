@@ -6,8 +6,11 @@ import type { ServiceCtx } from '$lib/services';
 import type { InventorySchedule } from '$lib/types/inventory';
 
 async function getEmailLocale(ctx: ServiceCtx): Promise<'en' | 'ja'> {
-	const rows = await ctx.db.select({ value: schema.settings.value }).from(schema.settings)
-		.where(eq(schema.settings.key, 'email_locale')).limit(1);
+	const rows = await ctx.db
+		.select({ value: schema.settings.value })
+		.from(schema.settings)
+		.where(eq(schema.settings.key, 'email_locale'))
+		.limit(1);
 	return rows[0]?.value === 'ja' ? 'ja' : 'en';
 }
 
@@ -19,7 +22,10 @@ export async function listInventorySchedules(ctx: ServiceCtx) {
 	return { schedules: schedules as InventorySchedule[] };
 }
 
-export async function createInventorySchedule(ctx: ServiceCtx, data: { title: string; scheduled_at: string; note: string | null }) {
+export async function createInventorySchedule(
+	ctx: ServiceCtx,
+	data: { title: string; scheduled_at: string; note: string | null }
+) {
 	if (!data.title) return fail(400, { error: 'Title is required.' });
 	if (!data.scheduled_at) return fail(400, { error: 'Scheduled date is required.' });
 
@@ -32,10 +38,19 @@ export async function createInventorySchedule(ctx: ServiceCtx, data: { title: st
 	}
 }
 
-export async function updateInventoryScheduleStatus(ctx: ServiceCtx, id: string, status: InventorySchedule['status']) {
+export async function updateInventoryScheduleStatus(
+	ctx: ServiceCtx,
+	id: string,
+	status: InventorySchedule['status']
+) {
 	if (!id) return fail(400, { error: 'ID is required.' });
 
-	const allowed: InventorySchedule['status'][] = ['planned', 'in_progress', 'completed', 'cancelled'];
+	const allowed: InventorySchedule['status'][] = [
+		'planned',
+		'in_progress',
+		'completed',
+		'cancelled'
+	];
 	if (!allowed.includes(status)) return fail(400, { error: 'Invalid status.' });
 
 	let schedule: InventorySchedule | undefined;
@@ -49,33 +64,39 @@ export async function updateInventoryScheduleStatus(ctx: ServiceCtx, id: string,
 	}
 
 	try {
-		await ctx.db.update(schema.inventorySchedules).set({ status }).where(eq(schema.inventorySchedules.id, id));
+		await ctx.db
+			.update(schema.inventorySchedules)
+			.set({ status })
+			.where(eq(schema.inventorySchedules.id, id));
 	} catch (err) {
 		console.error('Failed to update schedule status:', err);
 		return fail(500, { error: 'Failed to update status.' });
 	}
 
 	if (status === 'in_progress' && schedule) {
-		getEmailLocale(ctx).then((locale) => {
-			const subject = locale === 'ja'
-				? `棚卸開始: ${schedule.title}`
-				: `Stocktake Started: ${schedule.title}`;
-			const summary = locale === 'ja'
-				? `棚卸スケジュール「${schedule.title}」が開始されました（${schedule.scheduled_at}）。在庫カウントを開始してください。`
-				: `Stocktake schedule "${schedule.title}" has started (${schedule.scheduled_at}). Please begin inventory counting.`;
-			const details: Record<string, string> = locale === 'ja'
-				? { '予定日': schedule.scheduled_at, 'タイトル': schedule.title }
-				: { 'Scheduled Date': schedule.scheduled_at, 'Title': schedule.title };
-			sendAdminAlertSilent(ctx, { subject, severity: 'info', summary, details });
-		}).catch((err) => {
-			console.error('[email] inventory schedule alert locale lookup failed:', err);
-			sendAdminAlertSilent(ctx, {
-				subject: `Stocktake Started: ${schedule.title}`,
-				severity: 'info',
-				summary: `Stocktake schedule "${schedule.title}" has started (${schedule.scheduled_at}).`,
-				details: { 'Scheduled Date': schedule.scheduled_at },
+		getEmailLocale(ctx)
+			.then((locale) => {
+				const subject =
+					locale === 'ja' ? `棚卸開始: ${schedule.title}` : `Stocktake Started: ${schedule.title}`;
+				const summary =
+					locale === 'ja'
+						? `棚卸スケジュール「${schedule.title}」が開始されました（${schedule.scheduled_at}）。在庫カウントを開始してください。`
+						: `Stocktake schedule "${schedule.title}" has started (${schedule.scheduled_at}). Please begin inventory counting.`;
+				const details: Record<string, string> =
+					locale === 'ja'
+						? { 予定日: schedule.scheduled_at, タイトル: schedule.title }
+						: { 'Scheduled Date': schedule.scheduled_at, Title: schedule.title };
+				sendAdminAlertSilent(ctx, { subject, severity: 'info', summary, details });
+			})
+			.catch((err) => {
+				console.error('[email] inventory schedule alert locale lookup failed:', err);
+				sendAdminAlertSilent(ctx, {
+					subject: `Stocktake Started: ${schedule.title}`,
+					severity: 'info',
+					summary: `Stocktake schedule "${schedule.title}" has started (${schedule.scheduled_at}).`,
+					details: { 'Scheduled Date': schedule.scheduled_at }
+				});
 			});
-		});
 	}
 
 	return { success: true };

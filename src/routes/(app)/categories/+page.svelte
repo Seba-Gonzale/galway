@@ -40,7 +40,7 @@
 	const columns = $derived([
 		{ key: 'name', label: t('categories.categoryName') },
 		{ key: 'description', label: t('common.description') },
-		{ key: 'product_count', label: t('categories.productCount'), width: '100px', numeric: true },
+		{ key: 'product_count', label: t('categories.productCount'), width: '100px', numeric: true }
 	]);
 </script>
 
@@ -77,12 +77,18 @@
 </div>
 
 <!-- Create / Edit Modal -->
-<Modal bind:open={showModal} title={editing ? t('categories.editTitle') : t('categories.createTitle')} size="sm">
+<Modal
+	bind:open={showModal}
+	title={editing ? t('categories.editTitle') : t('categories.createTitle')}
+	size="sm"
+>
 	<form
 		method="POST"
 		action={editing ? '?/update' : '?/create'}
 		class="form"
-		onsubmit={() => { errorMessage = null; }}
+		onsubmit={() => {
+			errorMessage = null;
+		}}
 	>
 		{#if editing}
 			<input type="hidden" name="id" value={editing.id} />
@@ -98,7 +104,12 @@
 		</div>
 		<div class="field">
 			<Label>{t('common.description')}</Label>
-			<Textarea name="description" bind:value={description} placeholder={t('categories.descriptionPlaceholder')} rows={3} />
+			<Textarea
+				name="description"
+				bind:value={description}
+				placeholder={t('categories.descriptionPlaceholder')}
+				rows={3}
+			/>
 		</div>
 
 		<div class="form-actions">

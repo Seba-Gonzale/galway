@@ -23,13 +23,16 @@
 		{ key: 'created_at', label: t('accounts.createdAt'), width: '180px' }
 	]);
 
-	const roleLabels = $derived<Record<string, string>>({ admin: t('accounts.roleAdmin'), general: t('accounts.roleGeneral') });
+	const roleLabels = $derived<Record<string, string>>({
+		admin: t('accounts.roleAdmin'),
+		general: t('accounts.roleGeneral')
+	});
 
 	const rows = $derived(
 		data.accounts.map((account) => ({
 			...account,
 			role: roleLabels[account.role] ?? account.role,
-			created_at: new Date(account.created_at).toLocaleDateString(),
+			created_at: new Date(account.created_at).toLocaleDateString()
 		}))
 	);
 
@@ -115,7 +118,11 @@
 		</div>
 	{/if}
 
-	<SearchBar bind:value={search} placeholder={t('accounts.searchPlaceholder')} onsubmit={handleSearch} />
+	<SearchBar
+		bind:value={search}
+		placeholder={t('accounts.searchPlaceholder')}
+		onsubmit={handleSearch}
+	/>
 
 	<div class="table-container">
 		<Table {columns} {rows}>

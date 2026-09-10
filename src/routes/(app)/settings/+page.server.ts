@@ -17,7 +17,7 @@ export const actions = {
 			notification_email: f.get('notification_email')?.toString().trim() ?? '',
 			low_stock_alert_enabled: f.get('low_stock_alert_enabled') === 'on',
 			alert_email_enabled: f.get('alert_email_enabled') === 'on',
-			email_locale: f.get('email_locale')?.toString() ?? 'en',
+			email_locale: f.get('email_locale')?.toString() ?? 'en'
 		});
 	},
 
@@ -28,12 +28,12 @@ export const actions = {
 				subject: 'Test Alert — Galway',
 				severity: 'info',
 				summary: 'This is a test email sent from the Galway settings page.',
-				details: { 'Sent by': locals.user?.name ?? 'admin', 'Time': new Date().toUTCString() },
+				details: { 'Sent by': locals.user?.name ?? 'admin', Time: new Date().toUTCString() }
 			});
 			return { testEmailSent: true };
 		} catch (err) {
 			console.error('[settings] sendTestEmail failed:', err);
 			return fail(500, { error: 'Failed to send test email' });
 		}
-	},
+	}
 } satisfies Actions;

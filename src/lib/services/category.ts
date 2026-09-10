@@ -13,7 +13,7 @@ export async function listCategories(ctx: ServiceCtx) {
 			id: schema.productCategories.id,
 			name: schema.productCategories.name,
 			description: schema.productCategories.description,
-			product_count: count(schema.products.id),
+			product_count: count(schema.products.id)
 		})
 		.from(schema.productCategories)
 		.leftJoin(schema.products, eq(schema.products.category_id, schema.productCategories.id))
@@ -23,7 +23,10 @@ export async function listCategories(ctx: ServiceCtx) {
 	return { categories: rows as ProductCategory[] };
 }
 
-export async function createCategory(ctx: ServiceCtx, data: { name: string; description: string | null }) {
+export async function createCategory(
+	ctx: ServiceCtx,
+	data: { name: string; description: string | null }
+) {
 	if (ctx.user.role !== 'admin') return fail(403, { error: 'Access denied' });
 	const parsed = categorySchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });
@@ -38,7 +41,10 @@ export async function createCategory(ctx: ServiceCtx, data: { name: string; desc
 	}
 }
 
-export async function updateCategory(ctx: ServiceCtx, data: { id: string; name: string; description: string | null }) {
+export async function updateCategory(
+	ctx: ServiceCtx,
+	data: { id: string; name: string; description: string | null }
+) {
 	if (ctx.user.role !== 'admin') return fail(403, { error: 'Access denied' });
 	if (!data.id) return fail(400, { error: 'ID is required' });
 	const parsed = categorySchema.safeParse(data);
@@ -62,7 +68,10 @@ export async function deleteCategory(ctx: ServiceCtx, id: string) {
 	if (!id) return fail(400, { error: 'ID is required' });
 
 	try {
-		const [target] = await ctx.db.select({ name: schema.productCategories.name }).from(schema.productCategories).where(eq(schema.productCategories.id, id));
+		const [target] = await ctx.db
+			.select({ name: schema.productCategories.name })
+			.from(schema.productCategories)
+			.where(eq(schema.productCategories.id, id));
 		await ctx.db.delete(schema.productCategories).where(eq(schema.productCategories.id, id));
 		await auditLog(ctx, 'delete', 'category', { target_id: id, target_label: target?.name });
 		return { success: true };

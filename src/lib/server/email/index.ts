@@ -26,10 +26,16 @@ export function createEmailProvider(env: Env): EmailProvider {
 
 		case 'ses':
 			if (!env.AWS_ACCESS_KEY_ID || !env.AWS_SECRET_ACCESS_KEY || !env.AWS_REGION) {
-				throw new Error('AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION are required for SES');
+				throw new Error(
+					'AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION are required for SES'
+				);
 			}
 			return new SesProvider(
-				{ accessKeyId: env.AWS_ACCESS_KEY_ID, secretAccessKey: env.AWS_SECRET_ACCESS_KEY, region: env.AWS_REGION },
+				{
+					accessKeyId: env.AWS_ACCESS_KEY_ID,
+					secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+					region: env.AWS_REGION
+				},
 				from
 			);
 

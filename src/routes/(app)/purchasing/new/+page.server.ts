@@ -24,7 +24,7 @@ export const actions = {
 			ordered_at: f.get('ordered_at')?.toString() ?? '',
 			expected_at: f.get('expected_at')?.toString() || null,
 			note: f.get('note')?.toString() ?? '',
-			details,
+			details
 		});
-	},
+	}
 } satisfies Actions;

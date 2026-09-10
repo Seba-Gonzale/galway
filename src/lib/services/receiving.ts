@@ -14,7 +14,7 @@ export async function getSlipExportData(ctx: ServiceCtx, id: string) {
 			.select({
 				slip_number: schema.receivingSlips.slip_number,
 				received_at: schema.receivingSlips.received_at,
-				supplier_name: schema.suppliers.name,
+				supplier_name: schema.suppliers.name
 			})
 			.from(schema.receivingSlips)
 			.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
@@ -24,12 +24,12 @@ export async function getSlipExportData(ctx: ServiceCtx, id: string) {
 				product_code: schema.products.code,
 				product_name: schema.products.name,
 				quantity: schema.receivingSlipDetails.quantity,
-				unit: schema.products.unit,
+				unit: schema.products.unit
 			})
 			.from(schema.receivingSlipDetails)
 			.leftJoin(schema.products, eq(schema.receivingSlipDetails.product_id, schema.products.id))
 			.where(eq(schema.receivingSlipDetails.slip_id, id))
-			.orderBy(schema.receivingSlipDetails.line_no),
+			.orderBy(schema.receivingSlipDetails.line_no)
 	]);
 	if (!slipRows[0]) error(404, 'Receiving slip not found');
 	return { slip: slipRows[0], details };
@@ -61,12 +61,15 @@ export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1)
 				supplier_id: schema.receivingSlips.supplier_id,
 				supplier_name: schema.suppliers.name,
 				item_count: count(schema.receivingSlipDetails.id),
-				user_name: schema.accounts.name,
+				user_name: schema.accounts.name
 			})
 			.from(schema.receivingSlips)
 			.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
 			.leftJoin(schema.accounts, eq(schema.receivingSlips.account_id, schema.accounts.id))
-			.leftJoin(schema.receivingSlipDetails, eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id))
+			.leftJoin(
+				schema.receivingSlipDetails,
+				eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id)
+			)
 			.where(whereClause)
 			.groupBy(schema.receivingSlips.id)
 			.orderBy(desc(schema.receivingSlips.received_at))
@@ -77,9 +80,14 @@ export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1)
 			.from(schema.suppliers)
 			.orderBy(asc(schema.suppliers.name)),
 		ctx.db
-			.select({ id: schema.products.id, code: schema.products.code, name: schema.products.name, unit: schema.products.unit })
+			.select({
+				id: schema.products.id,
+				code: schema.products.code,
+				name: schema.products.name,
+				unit: schema.products.unit
+			})
 			.from(schema.products)
-			.orderBy(asc(schema.products.code)),
+			.orderBy(asc(schema.products.code))
 	]);
 
 	return {
@@ -89,7 +97,7 @@ export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1)
 		totalItems: countResult[0]?.count ?? 0,
 		itemsPerPage,
 		currentPage,
-		searchQuery: search,
+		searchQuery: search
 	};
 }
 
@@ -106,12 +114,15 @@ export async function getReceivingSlip(ctx: ServiceCtx, id: string) {
 				user_name: schema.accounts.name,
 				note: schema.receivingSlips.note,
 				created_at: schema.receivingSlips.created_at,
-				item_count: count(schema.receivingSlipDetails.id),
+				item_count: count(schema.receivingSlipDetails.id)
 			})
 			.from(schema.receivingSlips)
 			.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
 			.leftJoin(schema.accounts, eq(schema.receivingSlips.account_id, schema.accounts.id))
-			.leftJoin(schema.receivingSlipDetails, eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id))
+			.leftJoin(
+				schema.receivingSlipDetails,
+				eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id)
+			)
 			.where(eq(schema.receivingSlips.id, id))
 			.groupBy(schema.receivingSlips.id),
 		ctx.db
@@ -121,7 +132,7 @@ export async function getReceivingSlip(ctx: ServiceCtx, id: string) {
 				product_code: schema.products.code,
 				product_name: schema.products.name,
 				quantity: schema.receivingSlipDetails.quantity,
-				unit: schema.products.unit,
+				unit: schema.products.unit
 			})
 			.from(schema.receivingSlipDetails)
 			.leftJoin(schema.products, eq(schema.receivingSlipDetails.product_id, schema.products.id))
@@ -132,9 +143,14 @@ export async function getReceivingSlip(ctx: ServiceCtx, id: string) {
 			.from(schema.suppliers)
 			.orderBy(asc(schema.suppliers.name)),
 		ctx.db
-			.select({ id: schema.products.id, code: schema.products.code, name: schema.products.name, unit: schema.products.unit })
+			.select({
+				id: schema.products.id,
+				code: schema.products.code,
+				name: schema.products.name,
+				unit: schema.products.unit
+			})
 			.from(schema.products)
-			.orderBy(asc(schema.products.code)),
+			.orderBy(asc(schema.products.code))
 	]);
 
 	if (!slipRows[0]) error(404, 'Receiving slip not found');
@@ -150,17 +166,21 @@ export async function getReceivingSlipForEdit(ctx: ServiceCtx, id: string) {
 	return { ...base, accounts, isAdmin: ctx.user.role === 'admin' };
 }
 
-export async function createReceivingSlip(ctx: ServiceCtx, data: {
-	received_at: string;
-	supplier_id: string;
-	note: string;
-	details: { product_id: string; quantity: number }[];
-}) {
+export async function createReceivingSlip(
+	ctx: ServiceCtx,
+	data: {
+		received_at: string;
+		supplier_id: string;
+		note: string;
+		details: { product_id: string; quantity: number }[];
+	}
+) {
 	if (!data.received_at) return fail(400, { error: 'Received date is required' });
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 
 	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0) return fail(400, { error: 'At least one valid line item is required' });
+	if (validDetails.length === 0)
+		return fail(400, { error: 'At least one valid line item is required' });
 
 	const slip_number = await nextSequentialNumber(
 		ctx.db,
@@ -174,68 +194,144 @@ export async function createReceivingSlip(ctx: ServiceCtx, data: {
 	try {
 		const [slip] = await ctx.db
 			.insert(schema.receivingSlips)
-			.values({ slip_number, received_at: data.received_at, supplier_id: data.supplier_id, account_id: ctx.user.id, note: data.note })
+			.values({
+				slip_number,
+				received_at: data.received_at,
+				supplier_id: data.supplier_id,
+				account_id: ctx.user.id,
+				note: data.note
+			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
 		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, product_id: validDetails[i].product_id, line_no: i + 1, quantity: validDetails[i].quantity });
+			await ctx.db.insert(schema.receivingSlipDetails).values({
+				slip_id: slip.id,
+				product_id: validDetails[i].product_id,
+				line_no: i + 1,
+				quantity: validDetails[i].quantity
+			});
 		}
 		for (const d of validDetails) {
-			await ctx.db.insert(schema.inventory).values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({ target: schema.inventory.product_id, set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now } });
+			await ctx.db
+				.insert(schema.inventory)
+				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
+				.onConflictDoUpdate({
+					target: schema.inventory.product_id,
+					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
+				});
 		}
 	} catch (err) {
-		if (slipId) await ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, slipId)).catch(() => {});
-		if (isSlipNumberConflict(err)) return fail(409, { error: 'Slip number conflict. Please try again.' });
+		if (slipId)
+			await ctx.db
+				.delete(schema.receivingSlips)
+				.where(eq(schema.receivingSlips.id, slipId))
+				.catch(() => {});
+		if (isSlipNumberConflict(err))
+			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		throw err;
 	}
 
-	await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'create', target_type: 'receiving_slip', detail: { supplier_id: data.supplier_id, received_at: data.received_at, item_count: validDetails.length } });
-	notifyLowStockForProducts(ctx, validDetails.map((d) => d.product_id));
+	await logAudit({
+		db: ctx.db,
+		user_id: ctx.user.id,
+		user_name: ctx.user.name,
+		action: 'create',
+		target_type: 'receiving_slip',
+		detail: {
+			supplier_id: data.supplier_id,
+			received_at: data.received_at,
+			item_count: validDetails.length
+		}
+	});
+	notifyLowStockForProducts(
+		ctx,
+		validDetails.map((d) => d.product_id)
+	);
 	redirect(303, '/receiving');
 }
 
-export async function updateReceivingSlip(ctx: ServiceCtx, id: string, data: {
-	received_at: string;
-	supplier_id: string;
-	note: string;
-	account_id?: string;
-	details: { product_id: string; quantity: number }[];
-}) {
+export async function updateReceivingSlip(
+	ctx: ServiceCtx,
+	id: string,
+	data: {
+		received_at: string;
+		supplier_id: string;
+		note: string;
+		account_id?: string;
+		details: { product_id: string; quantity: number }[];
+	}
+) {
 	if (!data.received_at) return fail(400, { error: 'Received date is required' });
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 
 	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0) return fail(400, { error: 'At least one valid line item is required' });
+	if (validDetails.length === 0)
+		return fail(400, { error: 'At least one valid line item is required' });
 
 	const now = new Date().toISOString();
-	const updateFields: Record<string, unknown> = { received_at: data.received_at, supplier_id: data.supplier_id, note: data.note };
+	const updateFields: Record<string, unknown> = {
+		received_at: data.received_at,
+		supplier_id: data.supplier_id,
+		note: data.note
+	};
 	if (data.account_id) updateFields.account_id = data.account_id;
 
 	try {
 		const oldDetails = await ctx.db
-			.select({ product_id: schema.receivingSlipDetails.product_id, quantity: schema.receivingSlipDetails.quantity })
+			.select({
+				product_id: schema.receivingSlipDetails.product_id,
+				quantity: schema.receivingSlipDetails.quantity
+			})
 			.from(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
-		await ctx.db.update(schema.receivingSlips).set(updateFields).where(eq(schema.receivingSlips.id, id));
-		await ctx.db.delete(schema.receivingSlipDetails).where(eq(schema.receivingSlipDetails.slip_id, id));
+		await ctx.db
+			.update(schema.receivingSlips)
+			.set(updateFields)
+			.where(eq(schema.receivingSlips.id, id));
+		await ctx.db
+			.delete(schema.receivingSlipDetails)
+			.where(eq(schema.receivingSlipDetails.slip_id, id));
 		for (const d of oldDetails) {
-			await ctx.db.update(schema.inventory).set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now }).where(eq(schema.inventory.product_id, d.product_id));
+			await ctx.db
+				.update(schema.inventory)
+				.set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now })
+				.where(eq(schema.inventory.product_id, d.product_id));
 		}
 		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: id, product_id: validDetails[i].product_id, line_no: i + 1, quantity: validDetails[i].quantity });
+			await ctx.db.insert(schema.receivingSlipDetails).values({
+				slip_id: id,
+				product_id: validDetails[i].product_id,
+				line_no: i + 1,
+				quantity: validDetails[i].quantity
+			});
 		}
 		for (const d of validDetails) {
-			await ctx.db.insert(schema.inventory).values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({ target: schema.inventory.product_id, set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now } });
+			await ctx.db
+				.insert(schema.inventory)
+				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
+				.onConflictDoUpdate({
+					target: schema.inventory.product_id,
+					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
+				});
 		}
 	} catch (err) {
 		console.error('Failed to update receiving slip:', err);
 		return fail(500, { error: 'Failed to update receiving slip' });
 	}
 
-	await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'update', target_type: 'receiving_slip', target_id: id, detail: { item_count: validDetails.length } });
-	notifyLowStockForProducts(ctx, validDetails.map((d) => d.product_id));
+	await logAudit({
+		db: ctx.db,
+		user_id: ctx.user.id,
+		user_name: ctx.user.name,
+		action: 'update',
+		target_type: 'receiving_slip',
+		target_id: id,
+		detail: { item_count: validDetails.length }
+	});
+	notifyLowStockForProducts(
+		ctx,
+		validDetails.map((d) => d.product_id)
+	);
 	redirect(303, `/receiving/${id}`);
 }
 
@@ -244,29 +340,53 @@ export async function deleteReceivingSlip(ctx: ServiceCtx, id: string) {
 	let oldDetails: { product_id: string; quantity: number }[] = [];
 	try {
 		oldDetails = await ctx.db
-			.select({ product_id: schema.receivingSlipDetails.product_id, quantity: schema.receivingSlipDetails.quantity })
+			.select({
+				product_id: schema.receivingSlipDetails.product_id,
+				quantity: schema.receivingSlipDetails.quantity
+			})
 			.from(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
 		await ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, id));
 		for (const d of oldDetails) {
-			await ctx.db.update(schema.inventory).set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now }).where(eq(schema.inventory.product_id, d.product_id));
+			await ctx.db
+				.update(schema.inventory)
+				.set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now })
+				.where(eq(schema.inventory.product_id, d.product_id));
 		}
 	} catch (err) {
 		console.error('Failed to delete receiving slip:', err);
 		return fail(500, { error: 'Failed to delete receiving slip' });
 	}
 
-	await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'delete', target_type: 'receiving_slip', target_id: id });
-	notifyLowStockForProducts(ctx, oldDetails.map((d) => d.product_id));
+	await logAudit({
+		db: ctx.db,
+		user_id: ctx.user.id,
+		user_name: ctx.user.name,
+		action: 'delete',
+		target_type: 'receiving_slip',
+		target_id: id
+	});
+	notifyLowStockForProducts(
+		ctx,
+		oldDetails.map((d) => d.product_id)
+	);
 	redirect(303, '/receiving');
 }
 
-export async function importReceivingSlips(ctx: ServiceCtx, csvText: string, date: string, supplierId: string) {
+export async function importReceivingSlips(
+	ctx: ServiceCtx,
+	csvText: string,
+	date: string,
+	supplierId: string
+) {
 	if (!date) return fail(400, { error: 'Please select a received date' });
 	if (!supplierId) return fail(400, { error: 'Please select a supplier' });
 
 	const rows = parseCSV(csvText);
-	if (rows.length < 2) return fail(400, { error: 'CSV has no data (requires a header row plus at least one data row)' });
+	if (rows.length < 2)
+		return fail(400, {
+			error: 'CSV has no data (requires a header row plus at least one data row)'
+		});
 
 	const [header, ...dataRows] = rows;
 	const codeIdx = header.findIndex((h) => h.trim() === 'Product Code');
@@ -274,7 +394,9 @@ export async function importReceivingSlips(ctx: ServiceCtx, csvText: string, dat
 	if (codeIdx === -1) return fail(400, { error: 'CSV must include a "Product Code" column' });
 	if (qtyIdx === -1) return fail(400, { error: 'CSV must include a "Quantity" column' });
 
-	const allProducts = await ctx.db.select({ id: schema.products.id, code: schema.products.code }).from(schema.products);
+	const allProducts = await ctx.db
+		.select({ id: schema.products.id, code: schema.products.code })
+		.from(schema.products);
 	const productMap = new Map(allProducts.map((p) => [p.code, p.id]));
 
 	const detailRecords: { product_id: string; quantity: number }[] = [];
@@ -301,22 +423,53 @@ export async function importReceivingSlips(ctx: ServiceCtx, csvText: string, dat
 	try {
 		const [slip] = await ctx.db
 			.insert(schema.receivingSlips)
-			.values({ slip_number, received_at: date, supplier_id: supplierId, account_id: ctx.user.id, note: '' })
+			.values({
+				slip_number,
+				received_at: date,
+				supplier_id: supplierId,
+				account_id: ctx.user.id,
+				note: ''
+			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
 		for (let i = 0; i < detailRecords.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, product_id: detailRecords[i].product_id, line_no: i + 1, quantity: detailRecords[i].quantity });
+			await ctx.db.insert(schema.receivingSlipDetails).values({
+				slip_id: slip.id,
+				product_id: detailRecords[i].product_id,
+				line_no: i + 1,
+				quantity: detailRecords[i].quantity
+			});
 		}
 		for (const d of detailRecords) {
-			await ctx.db.insert(schema.inventory).values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({ target: schema.inventory.product_id, set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now } });
+			await ctx.db
+				.insert(schema.inventory)
+				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
+				.onConflictDoUpdate({
+					target: schema.inventory.product_id,
+					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
+				});
 		}
-		await logAudit({ db: ctx.db, user_id: ctx.user.id, user_name: ctx.user.name, action: 'import', target_type: 'receiving_slip', detail: { count: detailRecords.length, date } });
-		notifyLowStockForProducts(ctx, detailRecords.map((d) => d.product_id));
+		await logAudit({
+			db: ctx.db,
+			user_id: ctx.user.id,
+			user_name: ctx.user.name,
+			action: 'import',
+			target_type: 'receiving_slip',
+			detail: { count: detailRecords.length, date }
+		});
+		notifyLowStockForProducts(
+			ctx,
+			detailRecords.map((d) => d.product_id)
+		);
 		return { success: true, count: detailRecords.length };
 	} catch (err) {
-		if (slipId) await ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, slipId)).catch(() => {});
-		if (isSlipNumberConflict(err)) return fail(409, { error: 'Slip number conflict. Please try again.' });
+		if (slipId)
+			await ctx.db
+				.delete(schema.receivingSlips)
+				.where(eq(schema.receivingSlips.id, slipId))
+				.catch(() => {});
+		if (isSlipNumberConflict(err))
+			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		console.error('Failed to import receiving slips:', err);
 		return fail(500, { error: 'Failed to import receiving slips' });
 	}

@@ -36,9 +36,7 @@
 
 	const filteredOptions = $derived(
 		searchQuery.trim()
-			? options.filter((o) =>
-					o.label.toLowerCase().includes(searchQuery.trim().toLowerCase())
-				)
+			? options.filter((o) => o.label.toLowerCase().includes(searchQuery.trim().toLowerCase()))
 			: options
 	);
 
@@ -69,7 +67,7 @@
 </script>
 
 {#if name}
-	<input type="hidden" {name} value={value} />
+	<input type="hidden" {name} {value} />
 {/if}
 
 <div class="wrapper">
@@ -94,12 +92,7 @@
 </div>
 
 {#if open}
-	<div
-		class="backdrop"
-		role="presentation"
-		onclick={closeDropdown}
-		onkeydown={handleKeydown}
-	></div>
+	<div class="backdrop" role="presentation" onclick={closeDropdown} onkeydown={handleKeydown}></div>
 	<div
 		class="dropdown"
 		style="top: {dropdownTop}px; left: {dropdownLeft}px; width: {dropdownWidth}px;"
@@ -109,7 +102,9 @@
 		<div class="search-wrapper">
 			<span class="search-icon"><Search size={13} /></span>
 			<input
-				{@attach (node) => { node.focus(); }}
+				{@attach (node) => {
+					node.focus();
+				}}
 				class="search-input"
 				type="text"
 				placeholder="検索..."

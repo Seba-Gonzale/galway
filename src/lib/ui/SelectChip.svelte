@@ -12,10 +12,10 @@
 <label>
 	<input
 		type="checkbox"
-		name={name}
-		value={value}
+		{name}
+		{value}
 		class="select-chip-input"
-		bind:checked={checked}
+		bind:checked
 		onchange={() => onChange?.(checked)}
 	/>
 	{label}

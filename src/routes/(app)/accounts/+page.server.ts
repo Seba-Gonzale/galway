@@ -16,7 +16,7 @@ export const actions = {
 			name: f.get('name')?.toString() ?? '',
 			email: f.get('email')?.toString() ?? '',
 			password: f.get('password')?.toString() ?? '',
-			role: f.get('role')?.toString() as 'admin' | 'general',
+			role: f.get('role')?.toString() as 'admin' | 'general'
 		});
 	},
 
@@ -27,12 +27,12 @@ export const actions = {
 			name: f.get('name')?.toString() ?? '',
 			email: f.get('email')?.toString() ?? '',
 			password: f.get('password')?.toString(),
-			role: f.get('role')?.toString() as 'admin' | 'general',
+			role: f.get('role')?.toString() as 'admin' | 'general'
 		});
 	},
 
 	delete: async ({ request, platform, locals }) => {
 		const f = await request.formData();
 		return deleteAccount(makeCtx(platform!, locals), f.get('id')?.toString() ?? '');
-	},
+	}
 } satisfies Actions;

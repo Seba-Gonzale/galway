@@ -21,7 +21,7 @@ export async function loadSettings(ctx: ServiceCtx) {
 			notification_email: map['notification_email'] ?? '',
 			low_stock_alert_enabled: map['low_stock_alert_enabled'] !== 'false',
 			alert_email_enabled: map['alert_email_enabled'] === 'true',
-			email_locale: (map['email_locale'] === 'ja' ? 'ja' : 'en') as 'en' | 'ja',
+			email_locale: (map['email_locale'] === 'ja' ? 'ja' : 'en') as 'en' | 'ja'
 		}
 	};
 }
@@ -45,7 +45,7 @@ export async function saveSettings(
 		{ key: 'notification_email', value: notification_email },
 		{ key: 'low_stock_alert_enabled', value: low_stock_alert_enabled ? 'true' : 'false' },
 		{ key: 'alert_email_enabled', value: alert_email_enabled ? 'true' : 'false' },
-		{ key: 'email_locale', value: email_locale },
+		{ key: 'email_locale', value: email_locale }
 	];
 	const now = new Date().toISOString();
 

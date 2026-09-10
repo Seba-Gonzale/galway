@@ -22,10 +22,7 @@ const nullableEmail = z.nullable(
 export const accountCreateSchema = z.object({
 	name: z.string().min(1, 'Name is required').max(100),
 	email: z.string().email('Invalid email address').max(254),
-	password: z
-		.string()
-		.min(8, 'Password must be at least 8 characters')
-		.max(128),
+	password: z.string().min(8, 'Password must be at least 8 characters').max(128),
 	role: z.enum(['admin', 'general'], { message: 'Invalid role' })
 });
 
@@ -45,14 +42,14 @@ export const profileUpdateSchema = z.object({
 	newPassword: z.preprocess(
 		emptyToUndefined,
 		z.string().min(8, 'New password must be at least 8 characters').max(128).optional()
-	),
+	)
 });
 
 export const settingsSchema = z.object({
 	notification_email: optionalEmail,
 	low_stock_alert_enabled: z.boolean(),
 	alert_email_enabled: z.boolean(),
-	email_locale: z.enum(['en', 'ja']).default('en'),
+	email_locale: z.enum(['en', 'ja']).default('en')
 });
 
 export const supplierSchema = z.object({

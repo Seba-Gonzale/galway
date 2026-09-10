@@ -2,7 +2,19 @@
 	import { Plus, Pencil, Trash2, Download, Upload } from '@lucide/svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Button, Input, Label, Modal, ConfirmDialog, Table, SearchBar, Textarea, Pagination, CsvImportDialog, Select } from '$lib/ui';
+	import {
+		Button,
+		Input,
+		Label,
+		Modal,
+		ConfirmDialog,
+		Table,
+		SearchBar,
+		Textarea,
+		Pagination,
+		CsvImportDialog,
+		Select
+	} from '$lib/ui';
 	import type { PageData } from './$types';
 	import type { Product } from './+page.server';
 	import { t } from '$lib/i18n';
@@ -20,7 +32,7 @@
 
 	const categoryOptions = $derived([
 		{ value: '', label: t('products.allCategories') },
-		...data.categories.map((c) => ({ value: c.id, label: c.name })),
+		...data.categories.map((c) => ({ value: c.id, label: c.name }))
 	]);
 
 	function buildParams(p: number) {
@@ -90,7 +102,7 @@
 		{ key: 'name', label: t('products.productName') },
 		{ key: 'category_name', label: t('products.category'), width: '140px' },
 		{ key: 'unit', label: t('products.unit'), width: '80px' },
-		{ key: 'description', label: t('products.description') },
+		{ key: 'description', label: t('products.description') }
 	]);
 </script>
 
@@ -120,11 +132,18 @@
 	</div>
 
 	<div class="filters">
-		<SearchBar bind:value={searchQuery} placeholder={t('products.searchPlaceholder')} onsubmit={handleSearch} />
+		<SearchBar
+			bind:value={searchQuery}
+			placeholder={t('products.searchPlaceholder')}
+			onsubmit={handleSearch}
+		/>
 		<div class="category-filter">
-			<Select options={categoryOptions} bind:value={categoryFilter} onchange={handleCategoryChange} />
+			<Select
+				options={categoryOptions}
+				bind:value={categoryFilter}
+				onchange={handleCategoryChange}
+			/>
 		</div>
-
 	</div>
 
 	<div class="table-with-pagination">
@@ -153,7 +172,11 @@
 </div>
 
 <!-- Create / Edit Modal -->
-<Modal bind:open={showModal} title={editing ? t('products.editTitle') : t('products.createTitle')} size="md">
+<Modal
+	bind:open={showModal}
+	title={editing ? t('products.editTitle') : t('products.createTitle')}
+	size="md"
+>
 	<form method="POST" action={editing ? '?/update' : '?/create'} class="form">
 		{#if editing}
 			<input type="hidden" name="id" value={editing.id} />
@@ -176,13 +199,23 @@
 				<Label>{t('products.category')}</Label>
 				<Select
 					name="category_id"
-					options={[{ value: '', label: t('products.allCategories') }, ...data.categories.map((c) => ({ value: c.id, label: c.name }))]}
+					options={[
+						{ value: '', label: t('products.allCategories') },
+						...data.categories.map((c) => ({ value: c.id, label: c.name }))
+					]}
 					bind:value={selectedCategoryId}
 				/>
 			</div>
 			<div class="field">
 				<Label>{t('products.minQuantity')}</Label>
-				<Input name="min_quantity" type="number" bind:value={minQuantity} min="0" step="0.01" placeholder="0" />
+				<Input
+					name="min_quantity"
+					type="number"
+					bind:value={minQuantity}
+					min="0"
+					step="0.01"
+					placeholder="0"
+				/>
 			</div>
 			<div class="field full">
 				<Label>{t('products.description')}</Label>
@@ -233,17 +266,22 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = await res.json() as any;
+			const json = (await res.json()) as any;
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = { type: 'success', message: `${json.data?.count ?? ''} ${t('common.items')} imported` };
+				importNotification = {
+					type: 'success',
+					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
+				};
 			} else {
 				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
 			importNotification = { type: 'error', message: t('common.error') };
 		}
-		setTimeout(() => { importNotification = null; }, 6000);
+		setTimeout(() => {
+			importNotification = null;
+		}, 6000);
 	}}
 />
 

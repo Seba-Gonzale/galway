@@ -14,10 +14,11 @@
 
 /* --- System Font Stack --- */
 :root {
-	--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
 		'Helvetica Neue', Arial, sans-serif;
-	--font-mono: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas,
-		monospace;
+	--font-mono:
+		'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
 
 	/* --- Spacing Scale --- */
 	--space-xs: 0.25rem;

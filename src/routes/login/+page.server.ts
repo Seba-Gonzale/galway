@@ -35,9 +35,7 @@ export const actions = {
 			where: eq(schema.loginRateLimits.ip, ip)
 		});
 		if (rateLimit?.locked_until && rateLimit.locked_until > now) {
-			const mins = Math.ceil(
-				(new Date(rateLimit.locked_until).getTime() - Date.now()) / 60000
-			);
+			const mins = Math.ceil((new Date(rateLimit.locked_until).getTime() - Date.now()) / 60000);
 			return fail(429, {
 				error: `Too many login attempts. Please try again in ${mins} minute(s).`
 			});

@@ -23,7 +23,7 @@ export const actions = {
 			shipped_at: f.get('shipped_at')?.toString() ?? '',
 			customer_id: f.get('customer_id')?.toString() || null,
 			note: f.get('note')?.toString() ?? '',
-			details,
+			details
 		});
-	},
+	}
 } satisfies Actions;

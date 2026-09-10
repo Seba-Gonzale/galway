@@ -2,7 +2,17 @@
 	import { Plus, Pencil, Trash2, Download, Upload, Package } from '@lucide/svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Button, Input, Label, Modal, ConfirmDialog, Table, SearchBar, Pagination, CsvImportDialog } from '$lib/ui';
+	import {
+		Button,
+		Input,
+		Label,
+		Modal,
+		ConfirmDialog,
+		Table,
+		SearchBar,
+		Pagination,
+		CsvImportDialog
+	} from '$lib/ui';
 	import type { PageData } from './$types';
 	import type { Supplier } from './+page.server';
 	import { t } from '$lib/i18n';
@@ -129,14 +139,23 @@
 	</div>
 
 	<div class="filters">
-		<SearchBar bind:value={searchQuery} placeholder={t('suppliers.searchPlaceholder')} onsubmit={handleSearch} />
+		<SearchBar
+			bind:value={searchQuery}
+			placeholder={t('suppliers.searchPlaceholder')}
+			onsubmit={handleSearch}
+		/>
 	</div>
 
 	<div class="table-with-pagination">
 		<Table {columns} rows={data.suppliers}>
 			{#snippet actions(row)}
 				<div class="row-actions">
-					<Button variant="ghost" size="sm" onclick={() => openManageProducts(row)} title={t('suppliers.manageProducts')}>
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => openManageProducts(row)}
+						title={t('suppliers.manageProducts')}
+					>
 						<Package size={14} />
 					</Button>
 					<Button variant="ghost" size="sm" onclick={() => openEdit(row)}>
@@ -161,7 +180,11 @@
 </div>
 
 <!-- Create / Edit Modal -->
-<Modal bind:open={showModal} title={editing ? t('suppliers.editTitle') : t('suppliers.createTitle')} size="md">
+<Modal
+	bind:open={showModal}
+	title={editing ? t('suppliers.editTitle') : t('suppliers.createTitle')}
+	size="md"
+>
 	<form method="POST" action={editing ? '?/update' : '?/create'} class="form">
 		{#if editing}
 			<input type="hidden" name="id" value={editing.id} />
@@ -204,7 +227,11 @@
 </Modal>
 
 <!-- Manage Products Modal -->
-<Modal bind:open={showProductsModal} title="{t('suppliers.linkedProducts')}: {managingProductsSupplierName}" size="md">
+<Modal
+	bind:open={showProductsModal}
+	title="{t('suppliers.linkedProducts')}: {managingProductsSupplierName}"
+	size="md"
+>
 	<div class="products-modal">
 		<div class="products-list">
 			{#each data.allProducts as product (product.id)}
@@ -271,17 +298,22 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = await res.json() as any;
+			const json = (await res.json()) as any;
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = { type: 'success', message: `${json.data?.count ?? ''} ${t('common.items')} imported` };
+				importNotification = {
+					type: 'success',
+					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
+				};
 			} else {
 				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
 			importNotification = { type: 'error', message: t('common.error') };
 		}
-		setTimeout(() => { importNotification = null; }, 6000);
+		setTimeout(() => {
+			importNotification = null;
+		}, 6000);
 	}}
 />
 

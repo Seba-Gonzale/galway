@@ -1,6 +1,11 @@
 import { makeCtx } from '$lib/services';
 export type { Customer } from '$lib/types/shipping';
-import { listCustomers, createCustomer, updateCustomer, deleteCustomer } from '$lib/services/customer';
+import {
+	listCustomers,
+	createCustomer,
+	updateCustomer,
+	deleteCustomer
+} from '$lib/services/customer';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ platform, locals }) =>
@@ -15,7 +20,7 @@ export const actions = {
 			zipcode: f.get('zipcode')?.toString().trim() || null,
 			address: f.get('address')?.toString().trim() || null,
 			email: f.get('email')?.toString().trim() || null,
-			note: f.get('note')?.toString().trim() || null,
+			note: f.get('note')?.toString().trim() || null
 		});
 	},
 
@@ -28,12 +33,12 @@ export const actions = {
 			zipcode: f.get('zipcode')?.toString().trim() || null,
 			address: f.get('address')?.toString().trim() || null,
 			email: f.get('email')?.toString().trim() || null,
-			note: f.get('note')?.toString().trim() || null,
+			note: f.get('note')?.toString().trim() || null
 		});
 	},
 
 	delete: async ({ request, platform, locals }) => {
 		const f = await request.formData();
 		return deleteCustomer(makeCtx(platform!, locals), f.get('id')?.toString() ?? '');
-	},
+	}
 } satisfies Actions;

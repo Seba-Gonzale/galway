@@ -11,11 +11,7 @@ export type ServiceCtx = {
 	request?: Request;
 };
 
-export function makeCtx(
-	platform: App.Platform,
-	locals: App.Locals,
-	request?: Request
-): ServiceCtx {
+export function makeCtx(platform: App.Platform, locals: App.Locals, request?: Request): ServiceCtx {
 	return {
 		db: getDb(platform.env.DB),
 		env: platform.env,

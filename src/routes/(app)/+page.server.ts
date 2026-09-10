@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 					product_name: schema.products.name,
 					unit: schema.products.unit,
 					quantity: schema.inventory.quantity,
-					min_quantity: schema.products.min_quantity,
+					min_quantity: schema.products.min_quantity
 				})
 				.from(schema.products)
 				.innerJoin(schema.inventory, eq(schema.products.id, schema.inventory.product_id))
@@ -51,10 +51,13 @@ export const load: PageServerLoad = async ({ platform }) => {
 					product_code: schema.products.code,
 					product_name: schema.products.name,
 					quantity: schema.purchaseOrderDetails.quantity,
-					unit: schema.products.unit,
+					unit: schema.products.unit
 				})
 				.from(schema.purchaseOrderDetails)
-				.innerJoin(schema.purchaseOrders, eq(schema.purchaseOrderDetails.order_id, schema.purchaseOrders.id))
+				.innerJoin(
+					schema.purchaseOrders,
+					eq(schema.purchaseOrderDetails.order_id, schema.purchaseOrders.id)
+				)
 				.innerJoin(schema.suppliers, eq(schema.purchaseOrders.supplier_id, schema.suppliers.id))
 				.innerJoin(schema.products, eq(schema.purchaseOrderDetails.product_id, schema.products.id))
 				.where(
@@ -73,17 +76,20 @@ export const load: PageServerLoad = async ({ platform }) => {
 					product_code: schema.products.code,
 					product_name: schema.products.name,
 					quantity: schema.shippingSlipDetails.quantity,
-					unit: schema.products.unit,
+					unit: schema.products.unit
 				})
 				.from(schema.shippingSlipDetails)
-				.innerJoin(schema.shippingSlips, eq(schema.shippingSlipDetails.slip_id, schema.shippingSlips.id))
+				.innerJoin(
+					schema.shippingSlips,
+					eq(schema.shippingSlipDetails.slip_id, schema.shippingSlips.id)
+				)
 				.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
 				.innerJoin(schema.products, eq(schema.shippingSlipDetails.product_id, schema.products.id))
 				.where(eq(schema.shippingSlips.shipped_at, today))
 				.orderBy(asc(schema.shippingSlips.slip_number), asc(schema.shippingSlipDetails.line_no)),
 
 			// 設定
-			db.select().from(schema.settings),
+			db.select().from(schema.settings)
 		]);
 
 	const settingsMap = Object.fromEntries(settingsRows.map((r) => [r.key, r.value]));
@@ -96,6 +102,6 @@ export const load: PageServerLoad = async ({ platform }) => {
 		shippingCountThisMonth: shc.count,
 		lowStockItems: lowStockEnabled ? lowStockRows : [],
 		todayReceiving,
-		todayShipping,
+		todayShipping
 	};
 };

@@ -58,13 +58,7 @@ export class CloudflareEmailProvider implements EmailProvider {
 
 	async send(payload: EmailPayload): Promise<void> {
 		const toAddr = Array.isArray(payload.to) ? payload.to[0] : payload.to;
-		const raw = buildMime(
-			this.from,
-			toAddr,
-			payload.subject,
-			payload.html,
-			payload.text ?? ''
-		);
+		const raw = buildMime(this.from, toAddr, payload.subject, payload.html, payload.text ?? '');
 		const message = new EmailMessage(this.from, toAddr, raw);
 		await this.binding.send(message);
 	}

@@ -18,7 +18,7 @@ const en = {
 		auditLogs: 'Audit Logs',
 		settings: 'Settings',
 		profile: 'Profile',
-		signOut: 'Sign Out',
+		signOut: 'Sign Out'
 	},
 	common: {
 		save: 'Save',
@@ -52,14 +52,14 @@ const en = {
 		noData: 'No data',
 		error: 'Error',
 		search: 'Search',
-		actions: 'Actions',
+		actions: 'Actions'
 	},
 	login: {
 		pageTitle: 'Sign In — Galway',
 		subtitle: 'Sign in to your account',
 		email: 'Email',
 		password: 'Password',
-		signIn: 'Sign In',
+		signIn: 'Sign In'
 	},
 	dashboard: {
 		pageTitle: 'Dashboard — Galway',
@@ -81,7 +81,7 @@ const en = {
 		productCode: 'Product Code',
 		productName: 'Product Name',
 		currentStock: 'Current Stock',
-		minStock: 'Min. Stock',
+		minStock: 'Min. Stock'
 	},
 	suppliers: {
 		pageTitle: 'Suppliers — Galway',
@@ -98,7 +98,7 @@ const en = {
 		searchPlaceholder: 'Search suppliers...',
 		manageProducts: 'Manage Products',
 		linkedProducts: 'Linked Products',
-		productsSaved: 'Product list updated.',
+		productsSaved: 'Product list updated.'
 	},
 	products: {
 		pageTitle: 'Products — Galway',
@@ -114,7 +114,7 @@ const en = {
 		createTitle: 'New Product',
 		deleteConfirm: 'Delete this product?',
 		empty: 'No products registered',
-		searchPlaceholder: 'Search by code or name...',
+		searchPlaceholder: 'Search by code or name...'
 	},
 	categories: {
 		pageTitle: 'Categories — Galway',
@@ -127,7 +127,7 @@ const en = {
 		deleteMessage: 'Products in this category will become uncategorized.',
 		empty: 'No categories registered',
 		namePlaceholder: 'e.g. Electronics',
-		descriptionPlaceholder: 'Category description (optional)',
+		descriptionPlaceholder: 'Category description (optional)'
 	},
 	purchasing: {
 		pageTitle: 'Purchasing — Galway',
@@ -172,10 +172,11 @@ const en = {
 		receivedAt: 'Received Date',
 		orderedQty: 'Ordered',
 		actualQty: 'Actual Received',
-		createReceivingSlipHint: 'Enter 0 for items not yet received (partial delivery). Status will not change automatically.',
+		createReceivingSlipHint:
+			'Enter 0 for items not yet received (partial delivery). Status will not change automatically.',
 		receivedQtySummary: 'Received Quantities',
 		totalReceived: 'Total Received',
-		diff: 'Difference',
+		diff: 'Difference'
 	},
 	receiving: {
 		pageTitle: 'Receiving — Galway',
@@ -199,7 +200,7 @@ const en = {
 		productCode: 'Product Code',
 		productName: 'Product Name',
 		quantity: 'Quantity',
-		unit: 'Unit',
+		unit: 'Unit'
 	},
 	shipping: {
 		pageTitle: 'Shipping — Galway',
@@ -232,7 +233,7 @@ const en = {
 		sigShipping: 'Shipping Confirmed',
 		sigReceiving: 'Received Confirmed',
 		printedAt: 'Printed:',
-		printButton: 'Print',
+		printButton: 'Print'
 	},
 	customers: {
 		pageTitle: 'Customers — Galway',
@@ -248,7 +249,7 @@ const en = {
 		empty: 'No customers registered',
 		namePlaceholder: 'Company name',
 		zipcode: 'Zip Code',
-		fax: 'Fax',
+		fax: 'Fax'
 	},
 	inventory: {
 		pageTitle: 'Inventory — Galway',
@@ -265,7 +266,7 @@ const en = {
 		product: 'Product',
 		stocktakeQty: 'Actual Quantity',
 		searchPlaceholder: 'Search by code or name...',
-		empty: 'No inventory data',
+		empty: 'No inventory data'
 	},
 	inventorySchedules: {
 		pageTitle: 'Stocktake Schedule — Galway',
@@ -290,7 +291,7 @@ const en = {
 		titleLabel: 'Title',
 		titlePlaceholder: 'e.g. Monthly Stocktake',
 		scheduledAtLabel: 'Scheduled Date',
-		noteLabel: 'Notes',
+		noteLabel: 'Notes'
 	},
 	reports: {
 		pageTitle: 'Reports — Galway',
@@ -300,7 +301,7 @@ const en = {
 		topShippingProducts: 'Top Shipping Products',
 		supplierRanking: 'Receiving by Supplier',
 		noData: 'No data available',
-		slipCount: 'slips',
+		slipCount: 'slips'
 	},
 	accounts: {
 		pageTitle: 'Accounts — Galway',
@@ -320,7 +321,7 @@ const en = {
 		namePlaceholder: 'Full name',
 		deleteConfirm: 'Delete this account?',
 		empty: 'No accounts registered',
-		searchPlaceholder: 'Search by name or email...',
+		searchPlaceholder: 'Search by name or email...'
 	},
 	auditLogs: {
 		pageTitle: 'Audit Logs — Galway',
@@ -350,7 +351,7 @@ const en = {
 		targetCategory: 'Category',
 		targetAccount: 'Account',
 		targetSettings: 'Settings',
-		empty: 'No audit logs',
+		empty: 'No audit logs'
 	},
 	settings: {
 		pageTitle: 'Settings — Galway',
@@ -363,11 +364,13 @@ const en = {
 		themeSystem: 'System',
 		stockAlert: 'Stock Alert',
 		lowStockAlert: 'Low Stock Alert',
-		lowStockDescPre: 'Show a warning on the dashboard when stock falls below the minimum quantity per product. Manage in',
+		lowStockDescPre:
+			'Show a warning on the dashboard when stock falls below the minimum quantity per product. Manage in',
 		lowStockDescLink: 'Products',
 		notifications: 'Admin Alerts',
 		emailNotification: 'Email Alerts',
-		emailNotificationDesc: 'Send low-stock alerts to the admin email address via Cloudflare Email (production) or the configured HTTP provider.',
+		emailNotificationDesc:
+			'Send low-stock alerts to the admin email address via Cloudflare Email (production) or the configured HTTP provider.',
 		notificationEmail: 'Admin Alert Email',
 		notificationEmailDesc: 'Email address to receive admin alerts (low stock, etc.).',
 		emailLocale: 'Email Language',
@@ -375,13 +378,15 @@ const en = {
 		testEmail: 'Send Test Email',
 		testEmailSent: 'Test email sent successfully.',
 		emailProvider: 'Account Notifications',
-		emailProviderDesc: 'Provider for account-level emails (welcome email, password change). Configured via environment variables.',
+		emailProviderDesc:
+			'Provider for account-level emails (welcome email, password change). Configured via environment variables.',
 		emailProviderLabel: 'Current provider',
-		emailProviderNotConfigured: 'Not configured — set EMAIL_PROVIDER and EMAIL_FROM in .dev.vars or wrangler secrets.',
+		emailProviderNotConfigured:
+			'Not configured — set EMAIL_PROVIDER and EMAIL_FROM in .dev.vars or wrangler secrets.',
 		saved: 'Settings saved.',
 		language: 'Language',
 		languageDesc: 'Select the display language for the application.',
-		save: 'Save',
+		save: 'Save'
 	},
 	profile: {
 		pageTitle: 'Profile — Galway',
@@ -402,14 +407,14 @@ const en = {
 		newPassword: 'New password',
 		newPasswordHint: 'Leave blank to keep current',
 		save: 'Save',
-		savedSuccessfully: 'Profile saved successfully.',
+		savedSuccessfully: 'Profile saved successfully.'
 	},
 	pagination: {
 		info: '{start}-{end} of {total} items · Page {current} of {pages}',
 		first: 'First page',
 		previous: 'Previous page',
 		next: 'Next page',
-		last: 'Last page',
+		last: 'Last page'
 	},
 	slipForm: {
 		receivedAt: 'Received Date',
@@ -435,7 +440,7 @@ const en = {
 		csvImportError: 'CSV import error:',
 		csvNoValidRows: 'No valid rows found in CSV.',
 		csvUnknownCode: 'Unknown product code: {code}',
-		csvInvalidQty: 'Invalid quantity on row {row}: {value}',
+		csvInvalidQty: 'Invalid quantity on row {row}: {value}'
 	},
 	csvDialog: {
 		defaultTitle: 'CSV Import',
@@ -457,9 +462,9 @@ const en = {
 		quantity: 'Quantity',
 		example: 'e.g. PRD001, Aluminum Frame Type-A, 100',
 		selectSupplier: 'Select supplier',
-		deleteFile: 'Delete file',
-	},
+		deleteFile: 'Delete file'
+	}
 };
 
-export type Dict = { [K in keyof typeof en]: { [J in keyof typeof en[K]]: string } };
+export type Dict = { [K in keyof typeof en]: { [J in keyof (typeof en)[K]]: string } };
 export default en;

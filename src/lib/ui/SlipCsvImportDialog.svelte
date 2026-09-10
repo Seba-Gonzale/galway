@@ -20,14 +20,7 @@
 		onclose?: () => void;
 	}
 
-	let {
-		open = $bindable(false),
-		title,
-		dateLabel,
-		suppliers,
-		onimport,
-		onclose
-	}: Props = $props();
+	let { open = $bindable(false), title, dateLabel, suppliers, onimport, onclose }: Props = $props();
 
 	const resolvedTitle = $derived(title ?? t('csvDialog.defaultTitle'));
 	const resolvedDateLabel = $derived(dateLabel ?? t('receiving.receivedAt'));
@@ -40,9 +33,7 @@
 	let date = $state(new Date().toISOString().slice(0, 10));
 	let supplierId = $state('');
 
-	const supplierOptions = $derived(
-		(suppliers ?? []).map((s) => ({ value: s.id, label: s.name }))
-	);
+	const supplierOptions = $derived((suppliers ?? []).map((s) => ({ value: s.id, label: s.name })));
 
 	const fileSizeLabel = $derived.by(() => {
 		if (!selectedFile) return '';
@@ -53,9 +44,7 @@
 		return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 	});
 
-	const canImport = $derived(
-		!!selectedFile && !!date && (suppliers == null || !!supplierId)
-	);
+	const canImport = $derived(!!selectedFile && !!date && (suppliers == null || !!supplierId));
 
 	function validateFile(file: File): string {
 		if (!file.name.toLowerCase().endsWith('.csv')) return t('csvDialog.invalidFile');
@@ -117,7 +106,6 @@
 
 <Modal bind:open title={resolvedTitle} onclose={handleClose} size="md">
 	<div class="import-dialog">
-
 		<!-- Drop zone -->
 		<label
 			class="drop-zone"
@@ -138,7 +126,10 @@
 					<button
 						class="clear-btn"
 						type="button"
-						onclick={(e) => { e.preventDefault(); clearFile(); }}
+						onclick={(e) => {
+							e.preventDefault();
+							clearFile();
+						}}
 						aria-label={t('csvDialog.deleteFile')}
 					>
 						<X size={16} />
@@ -152,12 +143,7 @@
 					<p class="drop-hint">{t('csvDialog.hint')}</p>
 				</div>
 			{/if}
-			<input
-				type="file"
-				accept=".csv"
-				class="visually-hidden"
-				onchange={onFileChange}
-			/>
+			<input type="file" accept=".csv" class="visually-hidden" onchange={onFileChange} />
 		</label>
 
 		{#if errorMessage}

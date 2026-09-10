@@ -20,20 +20,32 @@ describe('Supplier Service', () => {
 		const pw = await hashPassword('test123');
 		const [account] = await db
 			.insert(schema.accounts)
-			.values({ email: 'supplier-svc-test@example.com', password_hash: pw, name: 'Service Test', role: 'admin' })
+			.values({
+				email: 'supplier-svc-test@example.com',
+				password_hash: pw,
+				name: 'Service Test',
+				role: 'admin'
+			})
 			.returning();
 		testAccountId = account.id;
 
 		ctx = {
 			db,
 			env: proxy.env as Env,
-			user: { id: account.id, name: account.name, email: account.email, role: account.role, created_at: account.created_at },
+			user: {
+				id: account.id,
+				name: account.name,
+				email: account.email,
+				role: account.role,
+				created_at: account.created_at
+			}
 		};
 	});
 
 	afterAll(async () => {
 		const db = getDb(proxy.env.DB);
-		if (createdSupplierId) await db.delete(schema.suppliers).where(eq(schema.suppliers.id, createdSupplierId));
+		if (createdSupplierId)
+			await db.delete(schema.suppliers).where(eq(schema.suppliers.id, createdSupplierId));
 		await db.delete(schema.accounts).where(eq(schema.accounts.id, testAccountId));
 		await proxy.dispose();
 	});
@@ -56,7 +68,14 @@ describe('Supplier Service', () => {
 	});
 
 	it('createSupplier validates required name', async () => {
-		const result = await createSupplier(ctx, { name: '', tel: null, fax: null, zipcode: null, address: null, email: null });
+		const result = await createSupplier(ctx, {
+			name: '',
+			tel: null,
+			fax: null,
+			zipcode: null,
+			address: null,
+			email: null
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
@@ -67,18 +86,29 @@ describe('Supplier Service', () => {
 			fax: null,
 			zipcode: '100-0001',
 			address: 'Tokyo',
-			email: 'test@supplier.example.com',
+			email: 'test@supplier.example.com'
 		});
 		expect(result).toMatchObject({ success: true });
 
 		const db = getDb(proxy.env.DB);
-		const [found] = await db.select().from(schema.suppliers).where(eq(schema.suppliers.name, 'Test Supplier (service test)'));
+		const [found] = await db
+			.select()
+			.from(schema.suppliers)
+			.where(eq(schema.suppliers.name, 'Test Supplier (service test)'));
 		expect(found).toBeDefined();
 		createdSupplierId = found.id;
 	});
 
 	it('updateSupplier validates required id', async () => {
-		const result = await updateSupplier(ctx, { id: '', name: 'X', tel: null, fax: null, zipcode: null, address: null, email: null });
+		const result = await updateSupplier(ctx, {
+			id: '',
+			name: 'X',
+			tel: null,
+			fax: null,
+			zipcode: null,
+			address: null,
+			email: null
+		});
 		expect(result).toMatchObject({ status: 400 });
 	});
 
@@ -90,12 +120,15 @@ describe('Supplier Service', () => {
 			fax: null,
 			zipcode: null,
 			address: null,
-			email: null,
+			email: null
 		});
 		expect(result).toMatchObject({ success: true });
 
 		const db = getDb(proxy.env.DB);
-		const [found] = await db.select().from(schema.suppliers).where(eq(schema.suppliers.id, createdSupplierId));
+		const [found] = await db
+			.select()
+			.from(schema.suppliers)
+			.where(eq(schema.suppliers.id, createdSupplierId));
 		expect(found.name).toBe('Test Supplier (updated)');
 	});
 
@@ -109,7 +142,10 @@ describe('Supplier Service', () => {
 		expect(result).toMatchObject({ success: true });
 
 		const db = getDb(proxy.env.DB);
-		const [found] = await db.select().from(schema.suppliers).where(eq(schema.suppliers.id, createdSupplierId));
+		const [found] = await db
+			.select()
+			.from(schema.suppliers)
+			.where(eq(schema.suppliers.id, createdSupplierId));
 		expect(found).toBeUndefined();
 		createdSupplierId = '';
 	});

@@ -7,5 +7,5 @@ export const load: PageServerLoad = async ({ params, platform, locals }) =>
 
 export const actions = {
 	delete: async ({ params, platform, locals }) =>
-		deleteReceivingSlip(makeCtx(platform!, locals), params.id),
+		deleteReceivingSlip(makeCtx(platform!, locals), params.id)
 } satisfies Actions;
