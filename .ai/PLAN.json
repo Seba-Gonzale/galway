@@ -790,7 +790,7 @@
 
 		"TASK-023": {
 			"module": "MOD-018",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Unificar los 5 imports CSV en un framework genérico de importación (parse + validación de headers + append/replace + auditoría)",
 

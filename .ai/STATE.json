@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-023",
+		"task": "TASK-024",
 		"status": "ON_HOLD",
-		"note": "Siguiente paso de MOD-018 por orden: TASK-023, unificar los 5 imports CSV (product, supplier, inventory, receiving, shipping) en un framework genérico de importación (parse + validación de headers + append/replace + auditoría). Depende de TASK-022 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/utils/csv.ts. Esperando confirmación para proceder."
+		"note": "Fin de MOD-018 (TASK-018..023 completadas). Siguiente por orden: MOD-019 TASK-024, extraer la lógica del dashboard (8 queries Drizzle inline en src/routes/(app)/+page.server.ts) a src/lib/services/dashboard.ts. Depende de TASK-021 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/server/db/**. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-022",
-		"at": "2026-09-10T16:48:00-03:00"
+		"task": "TASK-023",
+		"at": "2026-09-10T17:12:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-023: helper de importación CSV en src/lib/services/shared/ y reemplazar el boilerplate de los 5 imports (product, supplier, inventory, receiving, shipping)",
+	"next_action": "Confirmar e implementar TASK-024: loadDashboard(ctx) en src/lib/services/dashboard.ts y dejar la ruta (app)/+page.server.ts solo parseando parámetros",
 
-	"updated_at": "2026-09-10T16:48:00-03:00"
+	"updated_at": "2026-09-10T17:12:00-03:00"
 }

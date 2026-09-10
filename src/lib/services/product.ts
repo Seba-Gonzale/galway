@@ -1,9 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { eq, asc, like, or, and, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
-import { handleDbError, paginate } from '$lib/services/shared';
+import { handleDbError, paginate, parseImportCsv, requireRecords } from '$lib/services/shared';
 import { productSchema } from '$lib/validation';
 import type { ServiceCtx } from '$lib/services';
 
@@ -211,34 +210,30 @@ export async function getExportData(ctx: ServiceCtx, search: string, category: s
 }
 
 export async function importProducts(ctx: ServiceCtx, csvText: string, mode: string) {
-	if (mode !== 'append' && mode !== 'replace') return fail(400, { error: 'Invalid import mode' });
+	const parsed = parseImportCsv(
+		csvText,
+		[
+			{ key: 'code', names: ['Product Code'], required: true },
+			{ key: 'name', names: ['Product Name'], required: true },
+			{ key: 'unit', names: ['Unit'], required: true },
+			{ key: 'description', names: ['Description'] }
+		],
+		mode
+	);
+	if (!('dataRows' in parsed)) return parsed;
+	const { dataRows, index } = parsed;
 
-	const rows = parseCSV(csvText);
-	if (rows.length < 2)
-		return fail(400, {
-			error: 'CSV has no data (requires a header row plus at least one data row)'
-		});
-
-	const [header, ...dataRows] = rows;
-	const codeIdx = header.findIndex((h) => h.trim() === 'Product Code');
-	const nameIdx = header.findIndex((h) => h.trim() === 'Product Name');
-	const unitIdx = header.findIndex((h) => h.trim() === 'Unit');
-	const descIdx = header.findIndex((h) => h.trim() === 'Description');
-
-	if (codeIdx === -1) return fail(400, { error: 'CSV must include a "Product Code" column' });
-	if (nameIdx === -1) return fail(400, { error: 'CSV must include a "Product Name" column' });
-	if (unitIdx === -1) return fail(400, { error: 'CSV must include a "Unit" column' });
-
-	const records = dataRows
-		.filter((row) => row[codeIdx]?.trim() && row[nameIdx]?.trim())
-		.map((row) => ({
-			code: row[codeIdx].trim(),
-			name: row[nameIdx].trim(),
-			unit: row[unitIdx]?.trim() || '',
-			description: descIdx >= 0 ? row[descIdx]?.trim() || null : null
-		}));
-
-	if (records.length === 0) return fail(400, { error: 'No valid data found' });
+	const records = requireRecords(
+		dataRows
+			.filter((row) => row[index.code]?.trim() && row[index.name]?.trim())
+			.map((row) => ({
+				code: row[index.code].trim(),
+				name: row[index.name].trim(),
+				unit: row[index.unit]?.trim() || '',
+				description: index.description >= 0 ? row[index.description]?.trim() || null : null
+			}))
+	);
+	if (!Array.isArray(records)) return records;
 
 	const now = new Date().toISOString();
 	try {

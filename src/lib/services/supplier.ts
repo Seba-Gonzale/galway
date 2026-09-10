@@ -1,10 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import { eq, asc, like, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { supplierSchema } from '$lib/validation';
-import { paginate } from '$lib/services/shared';
+import { paginate, parseImportCsv, requireRecords } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listSuppliers(ctx: ServiceCtx, search: string, page: number) {
@@ -214,36 +213,34 @@ export async function getExportData(ctx: ServiceCtx, search: string) {
 }
 
 export async function importSuppliers(ctx: ServiceCtx, csvText: string, mode: string) {
-	if (mode !== 'append' && mode !== 'replace') return fail(400, { error: 'Invalid import mode' });
+	const parsed = parseImportCsv(
+		csvText,
+		[
+			{ key: 'name', names: ['Supplier Name'], required: true },
+			{ key: 'tel', names: ['Phone'] },
+			{ key: 'fax', names: ['FAX'] },
+			{ key: 'zipcode', names: ['Zip Code'] },
+			{ key: 'address', names: ['Address'] },
+			{ key: 'email', names: ['Email'] }
+		],
+		mode
+	);
+	if (!('dataRows' in parsed)) return parsed;
+	const { dataRows, index } = parsed;
 
-	const rows = parseCSV(csvText);
-	if (rows.length < 2)
-		return fail(400, {
-			error: 'CSV has no data (requires a header row plus at least one data row)'
-		});
-
-	const [header, ...dataRows] = rows;
-	const nameIdx = header.findIndex((h) => h.trim() === 'Supplier Name');
-	if (nameIdx === -1) return fail(400, { error: 'CSV must include a "Supplier Name" column' });
-
-	const telIdx = header.findIndex((h) => h.trim() === 'Phone');
-	const faxIdx = header.findIndex((h) => h.trim() === 'FAX');
-	const zipcodeIdx = header.findIndex((h) => h.trim() === 'Zip Code');
-	const addressIdx = header.findIndex((h) => h.trim() === 'Address');
-	const emailIdx = header.findIndex((h) => h.trim() === 'Email');
-
-	const records = dataRows
-		.filter((row) => row[nameIdx]?.trim())
-		.map((row) => ({
-			name: row[nameIdx].trim(),
-			tel: telIdx >= 0 ? row[telIdx]?.trim() || null : null,
-			fax: faxIdx >= 0 ? row[faxIdx]?.trim() || null : null,
-			zipcode: zipcodeIdx >= 0 ? row[zipcodeIdx]?.trim() || null : null,
-			address: addressIdx >= 0 ? row[addressIdx]?.trim() || null : null,
-			email: emailIdx >= 0 ? row[emailIdx]?.trim() || null : null
-		}));
-
-	if (records.length === 0) return fail(400, { error: 'No valid data found' });
+	const records = requireRecords(
+		dataRows
+			.filter((row) => row[index.name]?.trim())
+			.map((row) => ({
+				name: row[index.name].trim(),
+				tel: index.tel >= 0 ? row[index.tel]?.trim() || null : null,
+				fax: index.fax >= 0 ? row[index.fax]?.trim() || null : null,
+				zipcode: index.zipcode >= 0 ? row[index.zipcode]?.trim() || null : null,
+				address: index.address >= 0 ? row[index.address]?.trim() || null : null,
+				email: index.email >= 0 ? row[index.email]?.trim() || null : null
+			}))
+	);
+	if (!Array.isArray(records)) return records;
 
 	try {
 		if (mode === 'replace') await ctx.db.delete(schema.suppliers);

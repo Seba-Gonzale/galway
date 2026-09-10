@@ -1,7 +1,6 @@
 import { error, redirect, fail } from '@sveltejs/kit';
 import { eq, desc, count, like, asc, or } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
 import {
@@ -10,7 +9,11 @@ import {
 	paginate,
 	validateLineItems,
 	insertDetails,
-	tryCleanup
+	tryCleanup,
+	parseImportCsv,
+	requireRecords,
+	productCodeMap,
+	mapProductQuantities
 } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
@@ -350,34 +353,17 @@ export async function deleteShippingSlip(ctx: ServiceCtx, id: string) {
 export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date: string) {
 	if (!date) return fail(400, { error: 'Please select a shipped date' });
 
-	const rows = parseCSV(csvText);
-	if (rows.length < 2)
-		return fail(400, {
-			error: 'CSV has no data (requires a header row plus at least one data row)'
-		});
+	const parsed = parseImportCsv(csvText, [
+		{ key: 'code', names: ['Product Code'], required: true },
+		{ key: 'quantity', names: ['Quantity'], required: true }
+	]);
+	if (!('dataRows' in parsed)) return parsed;
 
-	const [header, ...dataRows] = rows;
-	const codeIdx = header.findIndex((h) => h.trim() === 'Product Code');
-	const qtyIdx = header.findIndex((h) => h.trim() === 'Quantity');
-	if (codeIdx === -1) return fail(400, { error: 'CSV must include a "Product Code" column' });
-	if (qtyIdx === -1) return fail(400, { error: 'CSV must include a "Quantity" column' });
-
-	const allProducts = await ctx.db
-		.select({ id: schema.products.id, code: schema.products.code })
-		.from(schema.products);
-	const productMap = new Map(allProducts.map((p) => [p.code, p.id]));
-
-	const detailRecords: { product_id: string; quantity: number }[] = [];
-	for (const row of dataRows) {
-		const code = row[codeIdx]?.trim();
-		const qty = parseFloat(row[qtyIdx]?.trim() ?? '');
-		if (!code || isNaN(qty) || qty <= 0) continue;
-		const productId = productMap.get(code);
-		if (!productId) continue;
-		detailRecords.push({ product_id: productId, quantity: qty });
-	}
-
-	if (detailRecords.length === 0) return fail(400, { error: 'No valid data found' });
+	const productMap = await productCodeMap(ctx.db);
+	const detailRecords = requireRecords(
+		mapProductQuantities(parsed.dataRows, parsed.index, productMap)
+	);
+	if (!Array.isArray(detailRecords)) return detailRecords;
 
 	const slip_number = await nextSequentialNumber(
 		ctx.db,

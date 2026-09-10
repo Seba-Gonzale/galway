@@ -1,9 +1,14 @@
 import { fail } from '@sveltejs/kit';
 import { eq, asc, like, or, and, count, inArray } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
-import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
-import { paginate } from '$lib/services/shared';
+import {
+	paginate,
+	parseImportCsv,
+	requireRecords,
+	productCodeMap,
+	mapProductQuantities
+} from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listInventory(
@@ -188,36 +193,26 @@ export async function stocktake(ctx: ServiceCtx, product_id: string, quantity: n
 }
 
 export async function importInventory(ctx: ServiceCtx, csvText: string, mode: string) {
-	if (mode !== 'append' && mode !== 'replace') return fail(400, { error: 'Invalid import mode' });
+	const parsed = parseImportCsv(
+		csvText,
+		[
+			{ key: 'code', names: ['Product Code'], required: true },
+			{
+				key: 'quantity',
+				names: ['Quantity', 'Stock'],
+				required: true,
+				missingMessage: 'CSV must include a "Quantity" or "Stock" column'
+			}
+		],
+		mode
+	);
+	if (!('dataRows' in parsed)) return parsed;
 
-	const rows = parseCSV(csvText);
-	if (rows.length < 2)
-		return fail(400, {
-			error: 'CSV has no data (requires a header row plus at least one data row)'
-		});
-
-	const [header, ...dataRows] = rows;
-	const codeIdx = header.findIndex((h) => h.trim() === 'Product Code');
-	const qtyIdx = header.findIndex((h) => h.trim() === 'Quantity' || h.trim() === 'Stock');
-	if (codeIdx === -1) return fail(400, { error: 'CSV must include a "Product Code" column' });
-	if (qtyIdx === -1) return fail(400, { error: 'CSV must include a "Quantity" or "Stock" column' });
-
-	const allProducts = await ctx.db
-		.select({ id: schema.products.id, code: schema.products.code })
-		.from(schema.products);
-	const productMap = new Map(allProducts.map((p) => [p.code, p.id]));
-
-	const records: { product_id: string; quantity: number }[] = [];
-	for (const row of dataRows) {
-		const code = row[codeIdx]?.trim();
-		const qty = parseFloat(row[qtyIdx]?.trim() ?? '');
-		if (!code || isNaN(qty) || qty < 0) continue;
-		const productId = productMap.get(code);
-		if (!productId) continue;
-		records.push({ product_id: productId, quantity: qty });
-	}
-
-	if (records.length === 0) return fail(400, { error: 'No valid data found' });
+	const productMap = await productCodeMap(ctx.db);
+	const records = requireRecords(
+		mapProductQuantities(parsed.dataRows, parsed.index, productMap, { allowZero: true })
+	);
+	if (!Array.isArray(records)) return records;
 
 	const now = new Date().toISOString();
 	try {
