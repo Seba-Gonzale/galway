@@ -1,4 +1,4 @@
-> **Último commit:** `7f6dc69` — `refactor: unify inventory adjustments into upsertInventoryDelta/adjustInventory helpers`
+> **Último commit:** `cad7540` — `refactor: unify list* pagination into paginate() helper`
 
 ## Índice
 
@@ -85,7 +85,8 @@ galway/
 │   │       ├── index.ts           # ServiceCtx type, makeCtx(platform, locals, request)
 │   │       ├── shared/            # helpers compartidos: error.ts (handleDbError), audit.ts (auditLog),
 │   │       │                      #   numbering.ts (nextSequentialNumber: PO-/RCV-/SHP-YYYY-NNN),
-│   │       │                      #   inventory.ts (upsertInventoryDelta / adjustInventory)
+│   │       │                      #   inventory.ts (upsertInventoryDelta / adjustInventory),
+│   │       │                      #   pagination.ts (paginate: count + rows + extra en paralelo)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
@@ -142,6 +143,7 @@ galway/
     - `upsertInventoryDelta(db, items, sign, now)` — `INSERT ... ON CONFLICT DO UPDATE`: crea la fila de `inventory` si el producto no tenía una. La usan las operaciones que **suman** stock y históricamente creaban la fila: `createReceivingSlip`, la parte "aplicar" de `updateReceivingSlip`, `importReceivingSlips` y `convertToReceivingSlip`.
     - `adjustInventory(db, items, sign, now)` — `UPDATE` simple: **no hace nada** si la fila no existe. La usan shipping (resta) y todas las **reversiones** de editar/borrar.
       `sign` es `'+' | '-'` explícito en el call site (no `'in'/'out'`), para que el signo sea legible y auditable. `stocktake()` e `importInventory()` (en `services/inventory.ts`) **no** usan estos helpers: fijan cantidades absolutas, no deltas.
+12. **Paginación** (`src/lib/services/shared/pagination.ts`, TASK-021): `paginate({ page, itemsPerPage?, count, rows, extra? })` devuelve `{ rows, extra, totalItems, itemsPerPage, currentPage }`. Calcula `itemsPerPage` (default `20`, `30` en `listAccounts`), `currentPage = Math.max(1, page)` y el `offset`, y ejecuta el count en paralelo con la consulta de la página y con las consultas `extra` (catálogos: categorías, productos, proveedores), preservando el `Promise.all` que tenía cada `list*`. Las 7 funciones `list*` (`product`, `supplier`, `purchasing`, `receiving`, `shipping`, `inventory`, `account`) mantienen exactamente su shape de retorno: solo reemplazan el bloque `itemsPerPage`/`currentPage`/`offset` por el spread de `...pagination`.
 
 ## Styling Convention
 
