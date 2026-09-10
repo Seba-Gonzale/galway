@@ -265,7 +265,7 @@ export async function createShippingSlip(
 			})
 			.returning({ id: schema.shippingSlips.id });
 		slipId = slip.id;
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: slip.id, ...row })
 		);
 		await adjustInventory(ctx.db, validDetails, '-', now);
@@ -337,7 +337,7 @@ export async function updateShippingSlip(
 			.delete(schema.shippingSlipDetails)
 			.where(eq(schema.shippingSlipDetails.slip_id, id));
 		await adjustInventory(ctx.db, oldDetails, '+', now);
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: id, ...row })
 		);
 		await adjustInventory(ctx.db, validDetails, '-', now);
@@ -420,7 +420,7 @@ export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date
 			.values({ slip_number, shipped_at: date, account_id: ctx.user.id, note: '' })
 			.returning({ id: schema.shippingSlips.id });
 		slipId = slip.id;
-		await insertDetails(detailRecords, (row) =>
+		await insertDetails(ctx.db, detailRecords, (row) =>
 			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: slip.id, ...row })
 		);
 		await adjustInventory(ctx.db, detailRecords, '-', now);

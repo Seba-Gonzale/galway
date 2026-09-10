@@ -216,7 +216,7 @@ export async function createReceivingSlip(
 			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
 		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
@@ -289,7 +289,7 @@ export async function updateReceivingSlip(
 			.delete(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
 		await adjustInventory(ctx.db, oldDetails, '-', now);
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: id, ...row })
 		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
@@ -389,7 +389,7 @@ export async function importReceivingSlips(
 			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
-		await insertDetails(detailRecords, (row) =>
+		await insertDetails(ctx.db, detailRecords, (row) =>
 			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
 		);
 		await upsertInventoryDelta(ctx.db, detailRecords, '+', now);

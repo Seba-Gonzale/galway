@@ -6,10 +6,30 @@
  *  - validateLineItems: filtra líneas inválidas y devuelve fail(400) si no queda ninguna
  *  - insertDetails: inserta respetando line_no correlativo (i + 1) y la FK del padre
  *  - tryCleanup: rollback best-effort de la fila padre, sin lanzar
+ *
+ * Tras TASK-027, `insertDetails` envía los inserts con `db.batch()`: los tests
+ * unitarios usan un `db` stub que sólo registra los lotes, y el último describe
+ * verifica el camino real contra D1.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { getPlatformProxy } from 'wrangler';
+import { eq, asc } from 'drizzle-orm';
+import type { BatchItem } from 'drizzle-orm/batch';
+import { getDb } from '$lib/server/db';
+import * as schema from '$lib/server/db/schema';
 import { validateLineItems, insertDetails, tryCleanup } from './details';
+import type { DB } from '$lib/services';
 import type { DetailRow } from './details';
+
+/** DB stub: ejecuta "el batch" devolviendo los statements tal cual. */
+function stubDb(batches: BatchItem<'sqlite'>[][]): DB {
+	return {
+		batch: async (statements: BatchItem<'sqlite'>[]) => {
+			batches.push(statements);
+			return statements.map(() => ({}));
+		}
+	} as unknown as DB;
+}
 
 describe('validateLineItems', () => {
 	it('descarta líneas sin product_id o con cantidad <= 0', () => {
@@ -52,15 +72,17 @@ describe('validateLineItems', () => {
 describe('insertDetails', () => {
 	it('asigna line_no correlativo empezando en 1 y conserva product_id/quantity', async () => {
 		const inserted: DetailRow[] = [];
+		const batches: BatchItem<'sqlite'>[][] = [];
 
 		await insertDetails(
+			stubDb(batches),
 			[
 				{ product_id: 'p1', quantity: 3 },
 				{ product_id: 'p2', quantity: 1.5 }
 			],
 			(row) => {
 				inserted.push(row);
-				return Promise.resolve();
+				return {} as BatchItem<'sqlite'>;
 			}
 		);
 
@@ -70,42 +92,44 @@ describe('insertDetails', () => {
 		]);
 	});
 
-	it('deja la FK del padre al call site y lo invoca una vez por línea', async () => {
-		const rows: { parent_id: string }[] = [];
+	it('envía todas las líneas en un solo batch (sin una query por línea)', async () => {
+		const batches: BatchItem<'sqlite'>[][] = [];
 
 		await insertDetails(
+			stubDb(batches),
 			[
 				{ product_id: 'p1', quantity: 1 },
 				{ product_id: 'p2', quantity: 2 },
 				{ product_id: 'p3', quantity: 3 }
 			],
-			(row) => {
-				rows.push({ parent_id: 'parent-1' });
-				expect(row.product_id).toMatch(/^p[123]$/);
-				return Promise.resolve();
-			}
+			() => ({}) as BatchItem<'sqlite'>
 		);
 
-		expect(rows).toEqual([
-			{ parent_id: 'parent-1' },
-			{ parent_id: 'parent-1' },
-			{ parent_id: 'parent-1' }
-		]);
+		expect(batches).toHaveLength(1);
+		expect(batches[0]).toHaveLength(3);
 	});
 
 	it('no inserta nada si no hay líneas', async () => {
-		let calls = 0;
-		await insertDetails([], () => {
-			calls += 1;
-			return Promise.resolve();
-		});
+		const batches: BatchItem<'sqlite'>[][] = [];
 
-		expect(calls).toBe(0);
+		await insertDetails(stubDb(batches), [], () => ({}) as BatchItem<'sqlite'>);
+
+		expect(batches).toHaveLength(0);
 	});
 
-	it('propaga el error del insert para que el call site haga rollback', async () => {
+	it('propaga el error del batch para que el call site haga rollback', async () => {
+		const failingDb = {
+			batch: async () => {
+				throw new Error('boom');
+			}
+		} as unknown as DB;
+
 		await expect(
-			insertDetails([{ product_id: 'p1', quantity: 1 }], () => Promise.reject(new Error('boom')))
+			insertDetails(
+				failingDb,
+				[{ product_id: 'p1', quantity: 1 }],
+				() => ({}) as BatchItem<'sqlite'>
+			)
 		).rejects.toThrow('boom');
 	});
 });
@@ -145,5 +169,92 @@ describe('tryCleanup', () => {
 		await expect(
 			tryCleanup('slip-1', () => Promise.reject(new Error('delete failed')))
 		).resolves.toBeUndefined();
+	});
+});
+
+describe('insertDetails contra D1 local', () => {
+	let proxy: Awaited<ReturnType<typeof getPlatformProxy<{ DB: D1Database }>>>;
+	let db: ReturnType<typeof getDb>;
+	let accountId = '';
+	let supplierId = '';
+	let productId = '';
+	let slipId = '';
+
+	beforeAll(async () => {
+		proxy = await getPlatformProxy<{ DB: D1Database }>();
+		db = getDb(proxy.env.DB);
+
+		const [account] = await db
+			.insert(schema.accounts)
+			.values({
+				email: `details-batch-${Date.now()}@example.com`,
+				password_hash: 'not-a-real-hash',
+				name: 'Details Batch Test',
+				role: 'general'
+			})
+			.returning();
+		accountId = account.id;
+
+		const [supplier] = await db
+			.insert(schema.suppliers)
+			.values({ name: 'Details Batch Supplier' })
+			.returning();
+		supplierId = supplier.id;
+
+		const [product] = await db
+			.insert(schema.products)
+			.values({ code: `TST-DET-${Date.now()}`, name: 'Details Batch Product', unit: 'kg' })
+			.returning();
+		productId = product.id;
+
+		const [slip] = await db
+			.insert(schema.receivingSlips)
+			.values({
+				slip_number: `RCV-TST-${Date.now()}`,
+				received_at: '2026-01-20',
+				supplier_id: supplierId,
+				account_id: accountId,
+				note: ''
+			})
+			.returning();
+		slipId = slip.id;
+	});
+
+	afterAll(async () => {
+		await db
+			.delete(schema.receivingSlipDetails)
+			.where(eq(schema.receivingSlipDetails.slip_id, slipId));
+		await db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, slipId));
+		await db.delete(schema.inventory).where(eq(schema.inventory.product_id, productId));
+		await db.delete(schema.products).where(eq(schema.products.id, productId));
+		await db.delete(schema.suppliers).where(eq(schema.suppliers.id, supplierId));
+		await db.delete(schema.accounts).where(eq(schema.accounts.id, accountId));
+		await proxy.dispose();
+	});
+
+	it('inserta las líneas en la base con line_no correlativo', async () => {
+		await insertDetails(
+			db,
+			[
+				{ product_id: productId, quantity: 5 },
+				{ product_id: productId, quantity: 2 }
+			],
+			(row) => db.insert(schema.receivingSlipDetails).values({ slip_id: slipId, ...row })
+		);
+
+		const rows = await db
+			.select({
+				line_no: schema.receivingSlipDetails.line_no,
+				quantity: schema.receivingSlipDetails.quantity,
+				product_id: schema.receivingSlipDetails.product_id
+			})
+			.from(schema.receivingSlipDetails)
+			.where(eq(schema.receivingSlipDetails.slip_id, slipId))
+			.orderBy(asc(schema.receivingSlipDetails.line_no));
+
+		expect(rows).toEqual([
+			{ line_no: 1, quantity: 5, product_id: productId },
+			{ line_no: 2, quantity: 2, product_id: productId }
+		]);
 	});
 });

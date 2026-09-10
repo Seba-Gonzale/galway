@@ -1,5 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import type { ActionFailure } from '@sveltejs/kit';
+import type { BatchItem } from 'drizzle-orm/batch';
+import { runBatches } from './batch';
+import type { DB } from '$lib/services';
 
 export type LineItem = { product_id: string; quantity: number };
 export type DetailRow = LineItem & { line_no: number };
@@ -37,19 +40,28 @@ export function validateLineItems(
  *     await db.insert(details).values({ parent_id, product_id: ..., line_no: i + 1, quantity: ... });
  *   }
  *
- * @param insertRow recibe { product_id, line_no, quantity } y arma el insert con la FK
+ * Los inserts se envían con `db.batch()` (mismo SQL, mismo orden, sin N+1), así
+ * que `buildInsert` debe devolver el statement **sin** await.
+ *
+ * @param buildInsert recibe { product_id, line_no, quantity } y arma el insert con la FK
  */
 export async function insertDetails(
+	db: DB,
 	items: LineItem[],
-	insertRow: (row: DetailRow) => PromiseLike<unknown>
+	buildInsert: (row: DetailRow) => BatchItem<'sqlite'>
 ): Promise<void> {
-	for (let i = 0; i < items.length; i++) {
-		await insertRow({
-			product_id: items[i].product_id,
-			line_no: i + 1,
-			quantity: items[i].quantity
-		});
-	}
+	if (items.length === 0) return;
+
+	await runBatches(
+		db,
+		items.map((d, i) =>
+			buildInsert({
+				product_id: d.product_id,
+				line_no: i + 1,
+				quantity: d.quantity
+			})
+		)
+	);
 }
 
 /**

@@ -3,6 +3,7 @@ export { auditLog } from './audit';
 export { nextSequentialNumber } from './numbering';
 export { adjustInventory, upsertInventoryDelta } from './inventory';
 export { paginate, DEFAULT_ITEMS_PER_PAGE } from './pagination';
+export { runBatches, BATCH_CHUNK_SIZE } from './batch';
 export { validateLineItems, insertDetails, tryCleanup } from './details';
 export { parseImportCsv, requireRecords, productCodeMap, mapProductQuantities } from './import';
 export type { AuditOptions } from './audit';

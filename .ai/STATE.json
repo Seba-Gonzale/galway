@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-027",
+		"task": "TASK-028",
 		"status": "ON_HOLD",
-		"note": "Cerrado el hueco de MOD-019 con TASK-031 (impresión de remito extraída a getShippingSlipPrintData() y guard de admin de audit-logs unificado con requireAdmin(ctx)). Siguiente: MOD-020 TASK-027, eliminar el N+1 en los ajustes de inventario de receiving/shipping/purchasing (hoy 15-25 queries por operación) con db.batch() o un UPDATE con CASE WHEN. Depende de TASK-020 (cumplida) y tiene impact.other_modules=false. Esperando confirmación para proceder."
+		"note": "Siguiente de MOD-020 por orden: TASK-028, cachear settings por request en el ctx (getSettings(ctx) lazy + memoizado) para eliminar las 3-4 consultas repetidas a la tabla settings en sendAdminAlert, getEmailLocale y dashboard. Depende de TASK-026 (cumplida) y tiene impact.other_modules=true (toca src/lib/services/index.ts, settings.ts, email.ts, inventory_schedule.ts). Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-031",
-		"at": "2026-09-10T18:56:00-03:00"
+		"task": "TASK-027",
+		"at": "2026-09-10T19:28:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-027: batch de ajustes de inventario en src/lib/services/shared/inventory.ts (db.batch o UPDATE con CASE WHEN) sin cambiar el saldo final",
+	"next_action": "Confirmar e implementar TASK-028: getSettings(ctx) memoizado por request en makeCtx/ServiceCtx y unificar getEmailLocale en email.ts e inventory_schedule.ts",
 
-	"updated_at": "2026-09-10T18:56:00-03:00"
+	"updated_at": "2026-09-10T19:28:00-03:00"
 }

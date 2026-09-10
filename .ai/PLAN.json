@@ -336,7 +336,7 @@
 		"MOD-020": {
 			"name": "QUERY_OPTIMIZATION",
 			"phase": "PHASE-05",
-			"status": "PENDING",
+			"status": "IN_PROGRESS",
 
 			"purpose": "Reducir consultas innecesarias: batch de ajustes de inventario (N+1), caché de settings por request, paralelización de loads, paginación faltante, limpieza de sesiones expiradas",
 
@@ -940,7 +940,7 @@
 
 		"TASK-027": {
 			"module": "MOD-020",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Eliminar el N+1 en los ajustes de inventario de receiving/shipping/purchasing (hoy 15-25 queries por operación) usando db.batch() o un UPDATE con CASE WHEN",
 

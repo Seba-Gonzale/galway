@@ -1,5 +1,6 @@
 import { sql, eq } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
+import { runBatches } from './batch';
 import type { DB } from '$lib/services';
 
 export type InventoryDelta = { product_id: string; quantity: number };
@@ -21,6 +22,9 @@ function deltaExpression(sign: InventorySign, quantity: number) {
  *
  * Se usa en las operaciones que suman stock (receiving create/update/import y
  * la conversión de orden de compra), que son las que históricamente creaban la fila.
+ *
+ * Los statements se envían con `db.batch()` (un round trip por lote, en orden) en
+ * lugar de un `await` por línea: mismo SQL, mismo resultado, sin N+1.
  */
 export async function upsertInventoryDelta(
 	db: DB,
@@ -28,19 +32,24 @@ export async function upsertInventoryDelta(
 	sign: InventorySign,
 	now: string
 ): Promise<void> {
-	for (const d of items) {
-		await db
-			.insert(schema.inventory)
-			.values({
-				product_id: d.product_id,
-				quantity: signedQuantity(sign, d.quantity),
-				updated_at: now
-			})
-			.onConflictDoUpdate({
-				target: schema.inventory.product_id,
-				set: { quantity: deltaExpression(sign, d.quantity), updated_at: now }
-			});
-	}
+	if (items.length === 0) return;
+
+	await runBatches(
+		db,
+		items.map((d) =>
+			db
+				.insert(schema.inventory)
+				.values({
+					product_id: d.product_id,
+					quantity: signedQuantity(sign, d.quantity),
+					updated_at: now
+				})
+				.onConflictDoUpdate({
+					target: schema.inventory.product_id,
+					set: { quantity: deltaExpression(sign, d.quantity), updated_at: now }
+				})
+		)
+	);
 }
 
 /**
@@ -49,6 +58,8 @@ export async function upsertInventoryDelta(
  *
  * Se usa en shipping (resta de stock) y en las reversiones de editar/borrar,
  * que históricamente no creaban la fila.
+ *
+ * Igual que `upsertInventoryDelta`, se ejecuta con `db.batch()`.
  */
 export async function adjustInventory(
 	db: DB,
@@ -56,10 +67,15 @@ export async function adjustInventory(
 	sign: InventorySign,
 	now: string
 ): Promise<void> {
-	for (const d of items) {
-		await db
-			.update(schema.inventory)
-			.set({ quantity: deltaExpression(sign, d.quantity), updated_at: now })
-			.where(eq(schema.inventory.product_id, d.product_id));
-	}
+	if (items.length === 0) return;
+
+	await runBatches(
+		db,
+		items.map((d) =>
+			db
+				.update(schema.inventory)
+				.set({ quantity: deltaExpression(sign, d.quantity), updated_at: now })
+				.where(eq(schema.inventory.product_id, d.product_id))
+		)
+	);
 }

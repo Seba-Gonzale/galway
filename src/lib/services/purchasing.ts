@@ -221,7 +221,7 @@ export async function createPurchaseOrder(
 			})
 			.returning({ id: schema.purchaseOrders.id });
 		newId = order.id;
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.purchaseOrderDetails).values({ order_id: order.id, ...row })
 		);
 	} catch (err) {
@@ -280,7 +280,7 @@ export async function updatePurchaseOrder(
 		await ctx.db
 			.delete(schema.purchaseOrderDetails)
 			.where(eq(schema.purchaseOrderDetails.order_id, id));
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.purchaseOrderDetails).values({ order_id: id, ...row })
 		);
 	} catch (err) {
@@ -399,7 +399,7 @@ export async function convertToReceivingSlip(
 			.returning({ id: schema.receivingSlips.id });
 		newSlipId = slip.id;
 
-		await insertDetails(validDetails, (row) =>
+		await insertDetails(ctx.db, validDetails, (row) =>
 			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
 		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
