@@ -1,11 +1,12 @@
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { getDb } from '$lib/server/db';
 import { SESSION_COOKIE_OPTIONS, deleteSession } from '$lib/server/auth/index';
 
 export const GET: RequestHandler = async ({ cookies, platform }) => {
 	const token = cookies.get('session');
 	if (token && platform?.env.DB) {
-		await deleteSession(platform.env.DB, token).catch(() => {});
+		await deleteSession(getDb(platform.env.DB), token).catch(() => {});
 	}
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { maxAge, ...deleteOptions } = SESSION_COOKIE_OPTIONS;

@@ -281,7 +281,7 @@
 		"MOD-018": {
 			"name": "SHARED_SERVICES_UTILS",
 			"phase": "PHASE-05",
-			"status": "IN_PROGRESS",
+			"status": "COMPLETED",
 
 			"purpose": "Extraer helpers compartidos de la capa de servicios para eliminar el código repetido (error handling, auditoría, numeración, ajuste de inventario, paginación, inserción de detalles, import CSV)",
 
@@ -312,7 +312,7 @@
 		"MOD-019": {
 			"name": "SERVICE_ABSTRACTION",
 			"phase": "PHASE-05",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"purpose": "Llevar a la capa de servicios la lógica que hoy vive embebida en rutas (dashboard, audit-logs, login/auth, shipping print) y encapsular el ctx (permisos, user readonly, instancia DB única)",
 
@@ -874,7 +874,7 @@
 
 		"TASK-026": {
 			"module": "MOD-019",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Extraer rate limit + autenticación del login a un servicio, y centralizar requireAdmin() y la instancia de DB (hoy 4 drizzle() ad-hoc en auth)",
 

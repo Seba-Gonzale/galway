@@ -1,12 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { drizzle } from 'drizzle-orm/d1';
-import { eq } from 'drizzle-orm';
-import * as schema from '$lib/server/db/schema';
-import { verifyPassword, createSession, SESSION_COOKIE_OPTIONS } from '$lib/server/auth/index';
-
-const MAX_ATTEMPTS = 5;
-const LOCK_MINUTES = 15;
+import { getDb } from '$lib/server/db';
+import {
+	SESSION_COOKIE_OPTIONS,
+	createSession,
+	checkRateLimit,
+	recordFailedAttempt,
+	resetRateLimit,
+	authenticateAccount
+} from '$lib/server/auth/index';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -26,46 +28,21 @@ export const actions = {
 			return fail(400, { error: 'Email and password are required' });
 		}
 
-		const db = drizzle(platform!.env.DB, { schema });
+		const db = getDb(platform!.env.DB);
 		const ip = event.getClientAddress();
-		const now = new Date().toISOString();
 
-		// Rate limit check
-		const rateLimit = await db.query.loginRateLimits.findFirst({
-			where: eq(schema.loginRateLimits.ip, ip)
-		});
-		if (rateLimit?.locked_until && rateLimit.locked_until > now) {
-			const mins = Math.ceil((new Date(rateLimit.locked_until).getTime() - Date.now()) / 60000);
-			return fail(429, {
-				error: `Too many login attempts. Please try again in ${mins} minute(s).`
-			});
-		}
+		const lockedMessage = await checkRateLimit(db, ip);
+		if (lockedMessage) return fail(429, { error: lockedMessage });
 
-		const account = await db.query.accounts.findFirst({
-			where: eq(schema.accounts.email, email)
-		});
+		const account = await authenticateAccount(db, email, password);
 
-		const isValid = account ? await verifyPassword(password, account.password_hash) : false;
-
-		if (!account || !isValid) {
-			const attempts = (rateLimit?.attempts ?? 0) + 1;
-			const locked_until =
-				attempts >= MAX_ATTEMPTS
-					? new Date(Date.now() + LOCK_MINUTES * 60 * 1000).toISOString()
-					: null;
-			await db
-				.insert(schema.loginRateLimits)
-				.values({ ip, attempts, locked_until, last_attempt_at: now })
-				.onConflictDoUpdate({
-					target: schema.loginRateLimits.ip,
-					set: { attempts, locked_until, last_attempt_at: now }
-				});
+		if (!account) {
+			await recordFailedAttempt(db, ip);
 			return fail(401, { error: 'Invalid email address or password' });
 		}
 
-		// Success: reset rate limit and create session token
-		await db.delete(schema.loginRateLimits).where(eq(schema.loginRateLimits.ip, ip));
-		const token = await createSession(platform!.env.DB, account.id);
+		await resetRateLimit(db, ip);
+		const token = await createSession(db, account.id);
 		cookies.set('session', token, SESSION_COOKIE_OPTIONS);
 
 		throw redirect(302, '/');

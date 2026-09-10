@@ -1,4 +1,4 @@
-import { fail, error } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { eq, desc, or, like, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import {
@@ -10,10 +10,11 @@ import {
 import { accountCreateSchema, accountUpdateSchema, profileUpdateSchema } from '$lib/validation';
 import { sendWelcomeEmail, sendPasswordChangedEmail } from '$lib/services/email';
 import { paginate } from '$lib/services/shared';
+import { requireAdmin, requireAdminAction } from '$lib/services';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listAccounts(ctx: ServiceCtx, search: string, page: number) {
-	if (ctx.user.role !== 'admin') throw error(403, 'Access denied');
+	requireAdmin(ctx);
 
 	const whereClause = search
 		? or(like(schema.accounts.name, `%${search}%`), like(schema.accounts.email, `%${search}%`))
@@ -57,7 +58,8 @@ export async function createAccount(
 	ctx: ServiceCtx,
 	data: { name: string; email: string; password: string; role: 'admin' | 'general' }
 ) {
-	if (ctx.user.role !== 'admin') return fail(403, { error: 'Access denied' });
+	const denied = requireAdminAction(ctx);
+	if (denied) return denied;
 
 	const parsed = accountCreateSchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });
@@ -90,7 +92,8 @@ export async function updateAccount(
 	ctx: ServiceCtx,
 	data: { id: string; name: string; email: string; password?: string; role: 'admin' | 'general' }
 ) {
-	if (ctx.user.role !== 'admin') return fail(403, { error: 'Access denied' });
+	const denied = requireAdminAction(ctx);
+	if (denied) return denied;
 
 	const parsed = accountUpdateSchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });
@@ -115,7 +118,8 @@ export async function updateAccount(
 }
 
 export async function deleteAccount(ctx: ServiceCtx, id: string) {
-	if (ctx.user.role !== 'admin') return fail(403, { error: 'Access denied' });
+	const denied = requireAdminAction(ctx);
+	if (denied) return denied;
 	if (!id) return fail(400, { error: 'ID is required' });
 	if (id === ctx.user.id) return fail(400, { error: 'Cannot delete your own account' });
 
@@ -174,8 +178,8 @@ export async function updateProfile(
 		await ctx.db.update(schema.accounts).set(updateData).where(eq(schema.accounts.id, ctx.user.id));
 		if (newPassword) {
 			// Invalidate all sessions and issue a fresh one so only the current device stays logged in.
-			await deleteAllSessionsForAccount(ctx.env.DB, ctx.user.id);
-			const newToken = await createSession(ctx.env.DB, ctx.user.id);
+			await deleteAllSessionsForAccount(ctx.db, ctx.user.id);
+			const newToken = await createSession(ctx.db, ctx.user.id);
 			sendPasswordChangedEmail(ctx, ctx.user.id);
 			return { success: true, newToken };
 		}
