@@ -1,9 +1,10 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { Sidebar, ConfirmDialog } from '$lib/ui';
 	import { setLocale, t, type Locale } from '$lib/i18n';
 	import type { LayoutData } from './$types';
 
-	let { children, data }: { children: any; data: LayoutData } = $props();
+	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	setLocale(data.locale as Locale);
 

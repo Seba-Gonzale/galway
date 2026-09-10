@@ -9,7 +9,6 @@ import {
 	type AdminAlertEmailData,
 	type EmailLocale
 } from '$lib/server/email/templates';
-import { logAudit } from '$lib/server/audit';
 import type { ServiceCtx } from './index';
 
 const RateLimit = {

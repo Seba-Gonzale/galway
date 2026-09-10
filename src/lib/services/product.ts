@@ -3,6 +3,7 @@ import { eq, asc, like, or, and, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
+import { handleDbError } from '$lib/services/shared';
 import { productSchema } from '$lib/validation';
 import type { ServiceCtx } from '$lib/services';
 
@@ -92,16 +93,13 @@ export async function createProduct(
 			.insert(schema.inventory)
 			.values({ product_id: product.id, quantity: 0, updated_at: now })
 			.onConflictDoNothing();
-	} catch (err: any) {
+	} catch (err) {
 		if (productId)
 			await ctx.db
 				.delete(schema.products)
 				.where(eq(schema.products.id, productId))
 				.catch(() => {});
-		if (err?.message?.includes('UNIQUE'))
-			return fail(409, { error: 'That product code is already in use' });
-		console.error('Failed to create product:', err);
-		return fail(500, { error: 'Failed to create product' });
+		return handleDbError(err, 'product', 'create', 'That product code is already in use');
 	}
 	await logAudit({
 		db: ctx.db,
@@ -154,11 +152,8 @@ export async function updateProduct(
 			target_label: `${code} ${name}`
 		});
 		return { success: true };
-	} catch (err: any) {
-		if (err?.message?.includes('UNIQUE'))
-			return fail(409, { error: 'That product code is already in use' });
-		console.error('Failed to update product:', err);
-		return fail(500, { error: 'Failed to update product' });
+	} catch (err) {
+		return handleDbError(err, 'product', 'update', 'That product code is already in use');
 	}
 }
 
@@ -258,11 +253,8 @@ export async function importProducts(ctx: ServiceCtx, csvText: string, mode: str
 				.values({ product_id: p.id, quantity: 0, updated_at: now })
 				.onConflictDoNothing();
 		}
-	} catch (err: any) {
-		if (err?.message?.includes('UNIQUE'))
-			return fail(409, { error: 'Duplicate product codes detected' });
-		console.error('Failed to import products:', err);
-		return fail(500, { error: 'Failed to import products' });
+	} catch (err) {
+		return handleDbError(err, 'product', 'import', 'Duplicate product codes detected');
 	}
 	await logAudit({
 		db: ctx.db,

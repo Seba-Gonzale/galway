@@ -143,8 +143,7 @@ export async function getProfile(ctx: ServiceCtx) {
 
 export async function updateProfile(
 	ctx: ServiceCtx,
-	data: { name: string; currentPassword?: string; newPassword?: string },
-	currentToken?: string
+	data: { name: string; currentPassword?: string; newPassword?: string }
 ) {
 	const parsed = profileUpdateSchema.safeParse(data);
 	if (!parsed.success) return fail(400, { error: parsed.error.issues[0].message });

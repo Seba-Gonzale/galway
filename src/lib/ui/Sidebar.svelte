@@ -128,7 +128,7 @@
 	<!-- Primary Nav -->
 	<nav class="sidebar-nav">
 		<div class="nav-primary">
-			{#each primaryNavGroups as group, gi}
+			{#each primaryNavGroups as group, gi (gi)}
 				{@const items = visibleItems(group.items)}
 				{#if items.length > 0}
 					<div class="nav-group" class:has-label={!!group.groupLabel}>

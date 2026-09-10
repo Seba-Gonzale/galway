@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Input from './Input.svelte';
 	import Button from './Button.svelte';
 	import { Search } from '@lucide/svelte';
 	import { t } from '$lib/i18n';

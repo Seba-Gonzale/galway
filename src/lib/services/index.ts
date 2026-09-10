@@ -1,5 +1,3 @@
-import { drizzle } from 'drizzle-orm/d1';
-import * as schema from '$lib/server/db/schema';
 import { getDb } from '$lib/server/db';
 
 export type DB = ReturnType<typeof getDb>;

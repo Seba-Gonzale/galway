@@ -4,7 +4,7 @@
 		name: string;
 		value: string | number;
 		checked?: boolean;
-		onChange?: (v?: any) => void;
+		onChange?: (v?: string | number | boolean) => void;
 	}
 	let { label, name, value, checked = false, onChange }: Props = $props();
 </script>

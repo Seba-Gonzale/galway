@@ -45,7 +45,7 @@ describe('Auth Hooks Integration', () => {
 				}
 			};
 
-			const session = await getSession(mockEvent as any);
+			const session = await getSession(mockEvent as unknown as Parameters<typeof getSession>[0]);
 
 			expect(session).toBeDefined();
 			expect(session?.id).toBe(testAccountId);
@@ -63,7 +63,7 @@ describe('Auth Hooks Integration', () => {
 				}
 			};
 
-			const session = await getSession(mockEvent as any);
+			const session = await getSession(mockEvent as unknown as Parameters<typeof getSession>[0]);
 
 			expect(session).toBeNull();
 			expect.assertions(1);

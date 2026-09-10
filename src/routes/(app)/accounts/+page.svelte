@@ -11,7 +11,7 @@
 
 	let search = $state($page.url.searchParams.get('search') || '');
 	let showEditor = $state(false);
-	let editingAccount = $state<any>(null);
+	let editingAccount = $state<PageData['accounts'][number] | null>(null);
 	let showDeleteConfirm = $state(false);
 	let deleteTarget = $state<string | null>(null);
 	let deleteError = $state('');
@@ -54,7 +54,7 @@
 		goto(`?${params.toString()}`, { keepFocus: true });
 	}
 
-	function openEditor(account?: any) {
+	function openEditor(account?: PageData['accounts'][number]) {
 		editingAccount = account || null;
 		showEditor = true;
 	}
@@ -82,12 +82,12 @@
 			headers: { 'x-sveltekit-action': 'true' }
 		});
 
-		const result = deserialize(await response.text()) as any;
+		const result = deserialize(await response.text());
 
 		if (result.type === 'success') {
 			await invalidateAll();
 		} else if (result.type === 'failure') {
-			deleteError = result.data?.error || t('common.error');
+			deleteError = (result.data?.error as string) || t('common.error');
 		} else {
 			deleteError = t('common.error');
 		}
@@ -135,7 +135,7 @@
 						<button
 							type="button"
 							class="action-btn"
-							onclick={() => openEditor(account)}
+							onclick={() => openEditor(account as PageData['accounts'][number])}
 							aria-label="Edit account"
 						>
 							<Pencil size={14} />

@@ -114,7 +114,7 @@
 		<div class="error-block">
 			<span class="error-title">{t('slipForm.csvImportError')}</span>
 			<ul class="error-list">
-				{#each errors as err}
+				{#each errors as err, i (i)}
 					<li>{err}</li>
 				{/each}
 			</ul>

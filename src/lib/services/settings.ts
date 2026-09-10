@@ -4,13 +4,8 @@ import { logAudit } from '$lib/server/audit';
 import { settingsSchema } from '$lib/validation';
 import type { ServiceCtx } from '$lib/services';
 
-const SETTING_KEYS = [
-	'notification_email',
-	'low_stock_alert_enabled',
-	'alert_email_enabled',
-	'email_locale'
-] as const;
-type SettingKey = (typeof SETTING_KEYS)[number];
+type SettingKey =
+	'notification_email' | 'low_stock_alert_enabled' | 'alert_email_enabled' | 'email_locale';
 
 export async function loadSettings(ctx: ServiceCtx) {
 	if (ctx.user.role !== 'admin') throw error(403, 'Access denied');

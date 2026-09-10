@@ -183,7 +183,10 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = (await res.json()) as any;
+			const json = (await res.json()) as {
+				type: string;
+				data?: { count?: number; error?: string };
+			};
 			if (json.type === 'success') {
 				await invalidateAll();
 				importNotification = {

@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { eq, asc, like, count, inArray } from 'drizzle-orm';
+import { eq, asc, like, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';

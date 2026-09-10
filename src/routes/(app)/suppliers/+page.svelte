@@ -47,7 +47,6 @@
 		showProductsModal = false;
 	}
 	let searchQuery = $state(page.url.searchParams.get('search') || '');
-	let importNotification = $state<{ type: 'success' | 'error'; message: string } | null>(null);
 
 	function handleSearch() {
 		const params = new URLSearchParams();
@@ -298,22 +297,16 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = (await res.json()) as any;
+			const json = (await res.json()) as {
+				type: string;
+				data?: { count?: number; error?: string };
+			};
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = {
-					type: 'success',
-					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
-				};
-			} else {
-				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
-			importNotification = { type: 'error', message: t('common.error') };
+			/* el diálogo de importación ya muestra sus propios errores */
 		}
-		setTimeout(() => {
-			importNotification = null;
-		}, 6000);
 	}}
 />
 

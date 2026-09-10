@@ -28,7 +28,6 @@
 	let deletingId = $state<string | null>(null);
 	let searchQuery = $state(page.url.searchParams.get('search') || '');
 	let categoryFilter = $state(page.url.searchParams.get('category') || '');
-	let importNotification = $state<{ type: 'success' | 'error'; message: string } | null>(null);
 
 	const categoryOptions = $derived([
 		{ value: '', label: t('products.allCategories') },
@@ -266,22 +265,16 @@
 				headers: { Accept: 'application/json' },
 				body: formData
 			});
-			const json = (await res.json()) as any;
+			const json = (await res.json()) as {
+				type: string;
+				data?: { count?: number; error?: string };
+			};
 			if (json.type === 'success') {
 				await invalidateAll();
-				importNotification = {
-					type: 'success',
-					message: `${json.data?.count ?? ''} ${t('common.items')} imported`
-				};
-			} else {
-				importNotification = { type: 'error', message: json.data?.error || t('common.error') };
 			}
 		} catch {
-			importNotification = { type: 'error', message: t('common.error') };
+			/* el diálogo de importación ya muestra sus propios errores */
 		}
-		setTimeout(() => {
-			importNotification = null;
-		}, 6000);
 	}}
 />
 

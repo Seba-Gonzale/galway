@@ -74,7 +74,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.todayReceiving as item}
+						{#each data.todayReceiving as item, i (i)}
 							<tr>
 								<td><a href="/purchasing">{item.order_number}</a></td>
 								<td>{item.supplier_name}</td>
@@ -110,7 +110,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.todayShipping as item}
+						{#each data.todayShipping as item, i (i)}
 							<tr>
 								<td><a href="/shipping">{item.slip_number}</a></td>
 								<td>{item.customer_name ?? '—'}</td>
