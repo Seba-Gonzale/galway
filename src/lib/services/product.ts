@@ -2,7 +2,13 @@ import { fail } from '@sveltejs/kit';
 import { eq, asc, like, or, and, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
-import { handleDbError, paginate, parseImportCsv, requireRecords } from '$lib/services/shared';
+import {
+	handleDbError,
+	paginate,
+	parseImportCsv,
+	requireRecords,
+	runBatches
+} from '$lib/services/shared';
 import { productSchema } from '$lib/validation';
 import type { ServiceCtx } from '$lib/services';
 
@@ -242,12 +248,15 @@ export async function importProducts(ctx: ServiceCtx, csvText: string, mode: str
 			.insert(schema.products)
 			.values(records)
 			.returning({ id: schema.products.id });
-		for (const p of inserted) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: p.id, quantity: 0, updated_at: now })
-				.onConflictDoNothing();
-		}
+		await runBatches(
+			ctx.db,
+			inserted.map((p) =>
+				ctx.db
+					.insert(schema.inventory)
+					.values({ product_id: p.id, quantity: 0, updated_at: now })
+					.onConflictDoNothing()
+			)
+		);
 	} catch (err) {
 		return handleDbError(err, 'product', 'import', 'Duplicate product codes detected');
 	}

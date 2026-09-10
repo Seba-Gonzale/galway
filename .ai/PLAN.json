@@ -969,6 +969,36 @@
 			]
 		},
 
+		"TASK-032": {
+			"module": "MOD-020",
+			"status": "COMPLETED",
+
+			"objective": "Eliminar el N+1 restante en los imports de inventario y productos: importInventory (un upsert por registro) e importProducts (un insert de inventory por producto importado)",
+
+			"dependencies": ["TASK-027"],
+
+			"allowed_scope": [
+				"src/lib/services/shared/**",
+				"src/lib/services/inventory.ts",
+				"src/lib/services/product.ts"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"importInventory aplica todos los upserts con runBatches() en vez de uno por registro",
+				"importProducts crea las filas de inventory con runBatches() en vez de una por producto",
+				"Importar el mismo CSV produce exactamente el mismo resultado que antes (replace incluido)",
+				"Los tests existentes pasan"
+			]
+		},
+
 		"TASK-028": {
 			"module": "MOD-020",
 			"status": "PENDING",

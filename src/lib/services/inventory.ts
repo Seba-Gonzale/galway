@@ -7,7 +7,8 @@ import {
 	parseImportCsv,
 	requireRecords,
 	productCodeMap,
-	mapProductQuantities
+	mapProductQuantities,
+	runBatches
 } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
@@ -217,15 +218,18 @@ export async function importInventory(ctx: ServiceCtx, csvText: string, mode: st
 	const now = new Date().toISOString();
 	try {
 		if (mode === 'replace') await ctx.db.delete(schema.inventory);
-		for (const r of records) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: r.product_id, quantity: r.quantity, updated_at: now })
-				.onConflictDoUpdate({
-					target: schema.inventory.product_id,
-					set: { quantity: r.quantity, updated_at: now }
-				});
-		}
+		await runBatches(
+			ctx.db,
+			records.map((r) =>
+				ctx.db
+					.insert(schema.inventory)
+					.values({ product_id: r.product_id, quantity: r.quantity, updated_at: now })
+					.onConflictDoUpdate({
+						target: schema.inventory.product_id,
+						set: { quantity: r.quantity, updated_at: now }
+					})
+			)
+		);
 	} catch (err) {
 		console.error('Failed to import inventory:', err);
 		return fail(500, { error: 'Failed to import inventory' });
