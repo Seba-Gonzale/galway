@@ -8,3 +8,6 @@ bun.lockb
 # Miscellaneous
 /static/
 /drizzle/
+
+# Generado por la herramienta (opencode plugin @sveltejs/opencode)
+/.opencode/

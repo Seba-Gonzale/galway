@@ -907,6 +907,37 @@
 			]
 		},
 
+		"TASK-031": {
+			"module": "MOD-019",
+			"status": "COMPLETED",
+
+			"objective": "Extraer a getShippingSlipPrintData() las 2 queries de la vista de impresión del remito y unificar el guard de admin de audit-logs con requireAdmin(ctx)",
+
+			"dependencies": ["TASK-026"],
+
+			"allowed_scope": [
+				"src/lib/services/shipping.ts",
+				"src/routes/(app)/shipping/[id]/print/**",
+				"src/routes/(app)/audit-logs/**"
+			],
+
+			"protected_scope": ["src/lib/server/db/**"],
+
+			"impact": {
+				"api_contract": false,
+				"database_schema": false,
+				"other_modules": false
+			},
+
+			"acceptance": [
+				"getShippingSlipPrintData(ctx, id) devuelve { slip, details } con las mismas columnas y el mismo 404",
+				"La ruta de impresión solo llama al servicio con makeCtx(platform, locals)",
+				"audit-logs usa requireAdmin(ctx) en lugar del check manual de locals.user.role",
+				"Los datos mostrados en la impresión y en audit-logs son idénticos",
+				"Los tests existentes pasan"
+			]
+		},
+
 		"TASK-027": {
 			"module": "MOD-020",
 			"status": "PENDING",

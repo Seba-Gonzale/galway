@@ -4,15 +4,15 @@
 	"current": {
 		"task": "TASK-027",
 		"status": "ON_HOLD",
-		"note": "Fin de MOD-018 y MOD-019 (TASK-018..026 completadas). Siguiente: MOD-020 TASK-027, eliminar el N+1 en los ajustes de inventario de receiving/shipping/purchasing (hoy 15-25 queries por operación) con db.batch() o un UPDATE con CASE WHEN. Depende de TASK-020 (cumplida) y tiene impact.other_modules=false. Pendiente de definir: la ruta (app)/shipping/[id]/print sigue armando su propio getDb(platform!.env.DB) — está en el purpose de MOD-019 pero no tiene tarea asignada en PLAN.json. Esperando confirmación para proceder."
+		"note": "Cerrado el hueco de MOD-019 con TASK-031 (impresión de remito extraída a getShippingSlipPrintData() y guard de admin de audit-logs unificado con requireAdmin(ctx)). Siguiente: MOD-020 TASK-027, eliminar el N+1 en los ajustes de inventario de receiving/shipping/purchasing (hoy 15-25 queries por operación) con db.batch() o un UPDATE con CASE WHEN. Depende de TASK-020 (cumplida) y tiene impact.other_modules=false. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-026",
-		"at": "2026-09-10T18:14:00-03:00"
+		"task": "TASK-031",
+		"at": "2026-09-10T18:56:00-03:00"
 	},
 
 	"next_action": "Confirmar e implementar TASK-027: batch de ajustes de inventario en src/lib/services/shared/inventory.ts (db.batch o UPDATE con CASE WHEN) sin cambiar el saldo final",
 
-	"updated_at": "2026-09-10T18:14:00-03:00"
+	"updated_at": "2026-09-10T18:56:00-03:00"
 }

@@ -1,12 +1,12 @@
-import { error } from '@sveltejs/kit';
-import { makeCtx } from '$lib/services';
+import { makeCtx, requireAdmin } from '$lib/services';
 import { listAuditLogs } from '$lib/services/audit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ platform, locals, url }) => {
-	if (locals.user?.role !== 'admin') throw error(403, 'Access denied');
+	const ctx = makeCtx(platform!, locals);
+	requireAdmin(ctx);
 
-	return listAuditLogs(makeCtx(platform!, locals), {
+	return listAuditLogs(ctx, {
 		action: url.searchParams.get('action') || '',
 		target: url.searchParams.get('target') || '',
 		user: url.searchParams.get('user') || '',

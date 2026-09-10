@@ -42,6 +42,46 @@ export async function getSlipExportData(ctx: ServiceCtx, id: string) {
 	return { slip: slipRows[0], details };
 }
 
+/**
+ * Datos para la vista de impresión del remito (2 queries, sin catálogo de
+ * productos ni conteo de ítems, que esa vista no usa).
+ *
+ * Antes vivían inline en `src/routes/(app)/shipping/[id]/print/+page.server.ts`.
+ */
+export async function getShippingSlipPrintData(ctx: ServiceCtx, id: string) {
+	const [slipRows, details] = await Promise.all([
+		ctx.db
+			.select({
+				id: schema.shippingSlips.id,
+				slip_number: schema.shippingSlips.slip_number,
+				shipped_at: schema.shippingSlips.shipped_at,
+				customer_name: schema.customers.name,
+				user_name: schema.accounts.name,
+				note: schema.shippingSlips.note
+			})
+			.from(schema.shippingSlips)
+			.leftJoin(schema.accounts, eq(schema.shippingSlips.account_id, schema.accounts.id))
+			.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
+			.where(eq(schema.shippingSlips.id, id)),
+
+		ctx.db
+			.select({
+				line_no: schema.shippingSlipDetails.line_no,
+				product_code: schema.products.code,
+				product_name: schema.products.name,
+				quantity: schema.shippingSlipDetails.quantity,
+				unit: schema.products.unit
+			})
+			.from(schema.shippingSlipDetails)
+			.leftJoin(schema.products, eq(schema.shippingSlipDetails.product_id, schema.products.id))
+			.where(eq(schema.shippingSlipDetails.slip_id, id))
+			.orderBy(asc(schema.shippingSlipDetails.line_no))
+	]);
+
+	if (!slipRows[0]) error(404, 'Shipping slip not found');
+	return { slip: slipRows[0], details };
+}
+
 export async function listShippingSlips(ctx: ServiceCtx, search = '', page = 1) {
 	const whereClause = search
 		? or(
