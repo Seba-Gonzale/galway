@@ -1,4 +1,4 @@
-> **Último commit:** `6b94191` — `refactor: extract shipping slip print data to service and use requireAdmin in audit-logs`
+> **Último commit:** `27a829b` — `perf: batch inventory adjustments and detail inserts to remove N+1`
 
 ## Índice
 
@@ -88,7 +88,8 @@ galway/
 │   │       │                      #   inventory.ts (upsertInventoryDelta / adjustInventory),
 │   │       │                      #   pagination.ts (paginate: count + rows + extra en paralelo),
 │   │       │                      #   details.ts (validateLineItems / insertDetails / tryCleanup),
-│   │       │                      #   import.ts (parseImportCsv / requireRecords / productCodeMap / mapProductQuantities)
+│   │       │                      #   import.ts (parseImportCsv / requireRecords / productCodeMap / mapProductQuantities),
+│   │       │                      #   batch.ts (runBatches: db.batch() en chunks de 50)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
 │   │       ├── receiving.ts, shipping.ts   # ajuste de inventario + getShippingSlipPrintData
@@ -164,6 +165,10 @@ galway/
     - Las funciones de sesión (`createSession`, `deleteSession`, `deleteAllSessionsForAccount`, `getSession`) aceptan `DbSource = drizzle | D1Database` vía `resolveDb()`: si el llamador ya tiene `ctx.db`, se reutiliza (una sola instancia por request); si pasa el binding crudo, se crea. Así `account.ts` usa `ctx.db` y los tests existentes que pasan `proxy.env.DB` siguen funcionando.
     - `requireAdmin(ctx)` (lanza `error(403)`, para loads) y `requireAdminAction(ctx)` (devuelve `fail(403)` o `null`, para actions) viven en `src/lib/services/index.ts` y reemplazan los 10 checks manuales de `category.ts`, `account.ts` y `settings.ts`. `audit-logs/+page.server.ts` construye su `ctx` con `makeCtx()` y llama a `requireAdmin(ctx)` antes de `listAuditLogs()`.
 18. **Impresión de remito** (`src/lib/services/shipping.ts`, TASK-031): `getShippingSlipPrintData(ctx, id)` mueve las 2 queries que había inline en `src/routes/(app)/shipping/[id]/print/+page.server.ts` (cabecera con joins a `accounts`/`customers` y detalles ordenados por `line_no`) y mantiene el `error(404, 'Shipping slip not found')`. Se descartó reusar `getShippingSlip()` porque añade una query (catálogo de productos) y un `groupBy` que la vista de impresión no usa. La ruta quedó en una sola línea.
+19. **Batching / N+1** (`src/lib/services/shared/batch.ts`, TASK-027): `runBatches(db, statements)` envía los statements con `db.batch()` en chunks de `BATCH_CHUNK_SIZE = 50` (D1 ejecuta cada batch **en orden**, así que el resultado es idéntico al bucle `for (...) await ...`, incluso si dos líneas tocan el mismo producto). Lo usan:
+    - `upsertInventoryDelta()` y `adjustInventory()` (`shared/inventory.ts`): los 11 call sites de receiving/shipping/purchasing pasan de una query por línea a un round trip por lote, con el mismo SQL (UPSERT vs UPDATE) y el mismo saldo final.
+    - `insertDetails(db, items, buildInsert)` (`shared/details.ts`): cambió de `insertRow` (callback awaiteado) a `buildInsert`, que devuelve el statement **sin** await, para poder lotear los inserts de detalles (9 call sites).
+      Se descartaron `INSERT` multi-row con `excluded.quantity` y `UPDATE ... CASE WHEN` porque, si dos líneas traen el mismo `product_id`, SQLite aplica una sola de ellas, mientras que el bucle original aplicaba ambas.
 
 ## Styling Convention
 
