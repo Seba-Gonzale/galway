@@ -1,11 +1,10 @@
 import { error, redirect, fail } from '@sveltejs/kit';
 import { eq, desc, count, like, asc, or } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
-import { nextSequentialNumber } from '$lib/services/shared';
+import { nextSequentialNumber, adjustInventory, upsertInventoryDelta } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -211,15 +210,7 @@ export async function createReceivingSlip(
 				quantity: validDetails[i].quantity
 			});
 		}
-		for (const d of validDetails) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({
-					target: schema.inventory.product_id,
-					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
-				});
-		}
+		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
 		if (slipId)
 			await ctx.db
@@ -291,12 +282,7 @@ export async function updateReceivingSlip(
 		await ctx.db
 			.delete(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
-		for (const d of oldDetails) {
-			await ctx.db
-				.update(schema.inventory)
-				.set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now })
-				.where(eq(schema.inventory.product_id, d.product_id));
-		}
+		await adjustInventory(ctx.db, oldDetails, '-', now);
 		for (let i = 0; i < validDetails.length; i++) {
 			await ctx.db.insert(schema.receivingSlipDetails).values({
 				slip_id: id,
@@ -305,15 +291,7 @@ export async function updateReceivingSlip(
 				quantity: validDetails[i].quantity
 			});
 		}
-		for (const d of validDetails) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({
-					target: schema.inventory.product_id,
-					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
-				});
-		}
+		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
 		console.error('Failed to update receiving slip:', err);
 		return fail(500, { error: 'Failed to update receiving slip' });
@@ -347,12 +325,7 @@ export async function deleteReceivingSlip(ctx: ServiceCtx, id: string) {
 			.from(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
 		await ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, id));
-		for (const d of oldDetails) {
-			await ctx.db
-				.update(schema.inventory)
-				.set({ quantity: sql`${schema.inventory.quantity} - ${d.quantity}`, updated_at: now })
-				.where(eq(schema.inventory.product_id, d.product_id));
-		}
+		await adjustInventory(ctx.db, oldDetails, '-', now);
 	} catch (err) {
 		console.error('Failed to delete receiving slip:', err);
 		return fail(500, { error: 'Failed to delete receiving slip' });
@@ -440,15 +413,7 @@ export async function importReceivingSlips(
 				quantity: detailRecords[i].quantity
 			});
 		}
-		for (const d of detailRecords) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({
-					target: schema.inventory.product_id,
-					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
-				});
-		}
+		await upsertInventoryDelta(ctx.db, detailRecords, '+', now);
 		await logAudit({
 			db: ctx.db,
 			user_id: ctx.user.id,

@@ -3,7 +3,7 @@ import { eq, desc, count, asc } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
-import { nextSequentialNumber } from '$lib/services/shared';
+import { nextSequentialNumber, upsertInventoryDelta } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1) {
@@ -409,15 +409,7 @@ export async function convertToReceivingSlip(
 				quantity: validDetails[i].quantity
 			});
 		}
-		for (const d of validDetails) {
-			await ctx.db
-				.insert(schema.inventory)
-				.values({ product_id: d.product_id, quantity: d.quantity, updated_at: now })
-				.onConflictDoUpdate({
-					target: schema.inventory.product_id,
-					set: { quantity: sql`${schema.inventory.quantity} + ${d.quantity}`, updated_at: now }
-				});
-		}
+		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
 		if (newSlipId)
 			await ctx.db
