@@ -1,4 +1,4 @@
-> **Último commit:** `5fa2ab6` — `refactor: extract login auth and rate limit to service and centralize requireAdmin`
+> **Último commit:** `6b94191` — `refactor: extract shipping slip print data to service and use requireAdmin in audit-logs`
 
 ## Índice
 
@@ -91,7 +91,7 @@ galway/
 │   │       │                      #   import.ts (parseImportCsv / requireRecords / productCodeMap / mapProductQuantities)
 │   │       ├── account.ts, product.ts, category.ts, supplier.ts
 │   │       ├── purchasing.ts       # PO FSM, convert-to-receiving
-│   │       ├── receiving.ts, shipping.ts   # ajuste de inventario
+│   │       ├── receiving.ts, shipping.ts   # ajuste de inventario + getShippingSlipPrintData
 │   │       ├── inventory.ts, inventory_schedule.ts
 │   │       ├── customer.ts, settings.ts, reports.ts
 │   │       ├── dashboard.ts        # loadDashboard(ctx): 8 queries del dashboard (TASK-024)
@@ -162,7 +162,8 @@ galway/
 17. **Auth y permisos** (TASK-026):
     - `src/lib/server/auth/index.ts` concentra el login: `checkRateLimit(db, ip)` (mensaje de error o `null`), `recordFailedAttempt(db, ip)` (5 intentos → bloqueo de 15 min por IP sobre `login_rate_limits`), `resetRateLimit(db, ip)` y `authenticateAccount(db, email, password)` (busca la cuenta y verifica PBKDF2). `src/routes/login/+page.server.ts` quedó reducido a parsear el form y orquestar esas 4 llamadas.
     - Las funciones de sesión (`createSession`, `deleteSession`, `deleteAllSessionsForAccount`, `getSession`) aceptan `DbSource = drizzle | D1Database` vía `resolveDb()`: si el llamador ya tiene `ctx.db`, se reutiliza (una sola instancia por request); si pasa el binding crudo, se crea. Así `account.ts` usa `ctx.db` y los tests existentes que pasan `proxy.env.DB` siguen funcionando.
-    - `requireAdmin(ctx)` (lanza `error(403)`, para loads) y `requireAdminAction(ctx)` (devuelve `fail(403)` o `null`, para actions) viven en `src/lib/services/index.ts` y reemplazan los 10 checks manuales de `category.ts`, `account.ts` y `settings.ts`.
+    - `requireAdmin(ctx)` (lanza `error(403)`, para loads) y `requireAdminAction(ctx)` (devuelve `fail(403)` o `null`, para actions) viven en `src/lib/services/index.ts` y reemplazan los 10 checks manuales de `category.ts`, `account.ts` y `settings.ts`. `audit-logs/+page.server.ts` construye su `ctx` con `makeCtx()` y llama a `requireAdmin(ctx)` antes de `listAuditLogs()`.
+18. **Impresión de remito** (`src/lib/services/shipping.ts`, TASK-031): `getShippingSlipPrintData(ctx, id)` mueve las 2 queries que había inline en `src/routes/(app)/shipping/[id]/print/+page.server.ts` (cabecera con joins a `accounts`/`customers` y detalles ordenados por `line_no`) y mantiene el `error(404, 'Shipping slip not found')`. Se descartó reusar `getShippingSlip()` porque añade una query (catálogo de productos) y un `groupBy` que la vista de impresión no usa. La ruta quedó en una sola línea.
 
 ## Styling Convention
 
