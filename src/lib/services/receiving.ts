@@ -8,7 +8,10 @@ import {
 	nextSequentialNumber,
 	adjustInventory,
 	upsertInventoryDelta,
-	paginate
+	paginate,
+	validateLineItems,
+	insertDetails,
+	tryCleanup
 } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
@@ -186,9 +189,8 @@ export async function createReceivingSlip(
 	if (!data.received_at) return fail(400, { error: 'Received date is required' });
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const slip_number = await nextSequentialNumber(
 		ctx.db,
@@ -211,21 +213,14 @@ export async function createReceivingSlip(
 			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({
-				slip_id: slip.id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
+		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
-		if (slipId)
-			await ctx.db
-				.delete(schema.receivingSlips)
-				.where(eq(schema.receivingSlips.id, slipId))
-				.catch(() => {});
+		await tryCleanup(slipId, (id) =>
+			ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, id))
+		);
 		if (isSlipNumberConflict(err))
 			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		throw err;
@@ -264,9 +259,8 @@ export async function updateReceivingSlip(
 	if (!data.received_at) return fail(400, { error: 'Received date is required' });
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const now = new Date().toISOString();
 	const updateFields: Record<string, unknown> = {
@@ -292,14 +286,9 @@ export async function updateReceivingSlip(
 			.delete(schema.receivingSlipDetails)
 			.where(eq(schema.receivingSlipDetails.slip_id, id));
 		await adjustInventory(ctx.db, oldDetails, '-', now);
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({
-				slip_id: id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: id, ...row })
+		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
 		console.error('Failed to update receiving slip:', err);
@@ -414,14 +403,9 @@ export async function importReceivingSlips(
 			})
 			.returning({ id: schema.receivingSlips.id });
 		slipId = slip.id;
-		for (let i = 0; i < detailRecords.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({
-				slip_id: slip.id,
-				product_id: detailRecords[i].product_id,
-				line_no: i + 1,
-				quantity: detailRecords[i].quantity
-			});
-		}
+		await insertDetails(detailRecords, (row) =>
+			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
+		);
 		await upsertInventoryDelta(ctx.db, detailRecords, '+', now);
 		await logAudit({
 			db: ctx.db,
@@ -437,11 +421,9 @@ export async function importReceivingSlips(
 		);
 		return { success: true, count: detailRecords.length };
 	} catch (err) {
-		if (slipId)
-			await ctx.db
-				.delete(schema.receivingSlips)
-				.where(eq(schema.receivingSlips.id, slipId))
-				.catch(() => {});
+		await tryCleanup(slipId, (id) =>
+			ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, id))
+		);
 		if (isSlipNumberConflict(err))
 			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		console.error('Failed to import receiving slips:', err);

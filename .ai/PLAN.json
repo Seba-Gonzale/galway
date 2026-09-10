@@ -759,7 +759,7 @@
 
 		"TASK-022": {
 			"module": "MOD-018",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Unificar validateLineItems(), insertDetails() y tryCleanup() para eliminar las 27 instancias repetidas de inserción de detalles y rollback de la fila padre",
 

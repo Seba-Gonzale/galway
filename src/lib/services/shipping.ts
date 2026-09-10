@@ -4,7 +4,14 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
-import { nextSequentialNumber, adjustInventory, paginate } from '$lib/services/shared';
+import {
+	nextSequentialNumber,
+	adjustInventory,
+	paginate,
+	validateLineItems,
+	insertDetails,
+	tryCleanup
+} from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -191,9 +198,8 @@ export async function createShippingSlip(
 ) {
 	if (!data.shipped_at) return fail(400, { error: 'Shipped date is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const slip_number = await nextSequentialNumber(
 		ctx.db,
@@ -216,21 +222,14 @@ export async function createShippingSlip(
 			})
 			.returning({ id: schema.shippingSlips.id });
 		slipId = slip.id;
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.shippingSlipDetails).values({
-				slip_id: slip.id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: slip.id, ...row })
+		);
 		await adjustInventory(ctx.db, validDetails, '-', now);
 	} catch (err) {
-		if (slipId)
-			await ctx.db
-				.delete(schema.shippingSlips)
-				.where(eq(schema.shippingSlips.id, slipId))
-				.catch(() => {});
+		await tryCleanup(slipId, (id) =>
+			ctx.db.delete(schema.shippingSlips).where(eq(schema.shippingSlips.id, id))
+		);
 		if (isSlipNumberConflict(err))
 			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		throw err;
@@ -268,9 +267,8 @@ export async function updateShippingSlip(
 ) {
 	if (!data.shipped_at) return fail(400, { error: 'Shipped date is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const now = new Date().toISOString();
 	const updateFields: Record<string, unknown> = {
@@ -296,14 +294,9 @@ export async function updateShippingSlip(
 			.delete(schema.shippingSlipDetails)
 			.where(eq(schema.shippingSlipDetails.slip_id, id));
 		await adjustInventory(ctx.db, oldDetails, '+', now);
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.shippingSlipDetails).values({
-				slip_id: id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: id, ...row })
+		);
 		await adjustInventory(ctx.db, validDetails, '-', now);
 	} catch (err) {
 		console.error('Failed to update shipping slip:', err);
@@ -401,14 +394,9 @@ export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date
 			.values({ slip_number, shipped_at: date, account_id: ctx.user.id, note: '' })
 			.returning({ id: schema.shippingSlips.id });
 		slipId = slip.id;
-		for (let i = 0; i < detailRecords.length; i++) {
-			await ctx.db.insert(schema.shippingSlipDetails).values({
-				slip_id: slip.id,
-				product_id: detailRecords[i].product_id,
-				line_no: i + 1,
-				quantity: detailRecords[i].quantity
-			});
-		}
+		await insertDetails(detailRecords, (row) =>
+			ctx.db.insert(schema.shippingSlipDetails).values({ slip_id: slip.id, ...row })
+		);
 		await adjustInventory(ctx.db, detailRecords, '-', now);
 		await logAudit({
 			db: ctx.db,
@@ -424,11 +412,9 @@ export async function importShippingSlips(ctx: ServiceCtx, csvText: string, date
 		);
 		return { success: true, count: detailRecords.length };
 	} catch (err) {
-		if (slipId)
-			await ctx.db
-				.delete(schema.shippingSlips)
-				.where(eq(schema.shippingSlips.id, slipId))
-				.catch(() => {});
+		await tryCleanup(slipId, (id) =>
+			ctx.db.delete(schema.shippingSlips).where(eq(schema.shippingSlips.id, id))
+		);
 		if (isSlipNumberConflict(err))
 			return fail(409, { error: 'Slip number conflict. Please try again.' });
 		console.error('Failed to import shipping slips:', err);

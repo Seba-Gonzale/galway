@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-022",
+		"task": "TASK-023",
 		"status": "ON_HOLD",
-		"note": "Siguiente paso de MOD-018 por orden: unificar validateLineItems(), insertDetails() y tryCleanup() (27 instancias de inserción de detalles y rollback de la fila padre). Depende de TASK-020 (cumplida) y tiene impact.other_modules=false. Esperando confirmación para proceder."
+		"note": "Siguiente paso de MOD-018 por orden: TASK-023, unificar los 5 imports CSV (product, supplier, inventory, receiving, shipping) en un framework genérico de importación (parse + validación de headers + append/replace + auditoría). Depende de TASK-022 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/utils/csv.ts. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-021",
-		"at": "2026-09-10T07:52:00-03:00"
+		"task": "TASK-022",
+		"at": "2026-09-10T16:48:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-022: crear helpers validateLineItems()/insertDetails()/tryCleanup() en src/lib/services/shared/ y reemplazar el boilerplate en purchasing, receiving y shipping",
+	"next_action": "Confirmar e implementar TASK-023: helper de importación CSV en src/lib/services/shared/ y reemplazar el boilerplate de los 5 imports (product, supplier, inventory, receiving, shipping)",
 
-	"updated_at": "2026-09-10T07:52:00-03:00"
+	"updated_at": "2026-09-10T16:48:00-03:00"
 }

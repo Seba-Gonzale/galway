@@ -3,6 +3,8 @@ export { auditLog } from './audit';
 export { nextSequentialNumber } from './numbering';
 export { adjustInventory, upsertInventoryDelta } from './inventory';
 export { paginate, DEFAULT_ITEMS_PER_PAGE } from './pagination';
+export { validateLineItems, insertDetails, tryCleanup } from './details';
 export type { AuditOptions } from './audit';
 export type { InventoryDelta, InventorySign } from './inventory';
 export type { PaginateOptions, Paginated } from './pagination';
+export type { LineItem, DetailRow, LineItemValidation } from './details';

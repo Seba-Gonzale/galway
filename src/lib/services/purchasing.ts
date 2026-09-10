@@ -3,7 +3,14 @@ import { eq, desc, count, asc } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
-import { nextSequentialNumber, upsertInventoryDelta, paginate } from '$lib/services/shared';
+import {
+	nextSequentialNumber,
+	upsertInventoryDelta,
+	paginate,
+	validateLineItems,
+	insertDetails,
+	tryCleanup
+} from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1) {
@@ -182,9 +189,8 @@ export async function createPurchaseOrder(
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 	if (!data.ordered_at) return fail(400, { error: 'Order date is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const order_number = await nextSequentialNumber(
 		ctx.db,
@@ -208,20 +214,13 @@ export async function createPurchaseOrder(
 			})
 			.returning({ id: schema.purchaseOrders.id });
 		newId = order.id;
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.purchaseOrderDetails).values({
-				order_id: order.id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.purchaseOrderDetails).values({ order_id: order.id, ...row })
+		);
 	} catch (err) {
-		if (newId)
-			await ctx.db
-				.delete(schema.purchaseOrders)
-				.where(eq(schema.purchaseOrders.id, newId))
-				.catch(() => {});
+		await tryCleanup(newId, (id) =>
+			ctx.db.delete(schema.purchaseOrders).where(eq(schema.purchaseOrders.id, id))
+		);
 		const message = String(err);
 		if (message.includes('UNIQUE constraint failed') && message.includes('order_number'))
 			return fail(409, { error: 'Order number conflict. Please try again.' });
@@ -258,9 +257,8 @@ export async function updatePurchaseOrder(
 	if (!data.supplier_id) return fail(400, { error: 'Supplier is required' });
 	if (!data.ordered_at) return fail(400, { error: 'Order date is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one valid line item is required' });
+	const validDetails = validateLineItems(data.details);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	try {
 		await ctx.db
@@ -275,14 +273,9 @@ export async function updatePurchaseOrder(
 		await ctx.db
 			.delete(schema.purchaseOrderDetails)
 			.where(eq(schema.purchaseOrderDetails.order_id, id));
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.purchaseOrderDetails).values({
-				order_id: id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.purchaseOrderDetails).values({ order_id: id, ...row })
+		);
 	} catch (err) {
 		console.error('Failed to update purchase order:', err);
 		return fail(500, { error: 'Failed to update purchase order' });
@@ -369,9 +362,11 @@ export async function convertToReceivingSlip(
 		return fail(400, { error: 'Receiving slips can only be created for ordered purchases' });
 	if (!data.received_at) return fail(400, { error: 'Received date is required' });
 
-	const validDetails = data.details.filter((d) => d.product_id && d.quantity > 0);
-	if (validDetails.length === 0)
-		return fail(400, { error: 'At least one line item with quantity > 0 is required' });
+	const validDetails = validateLineItems(
+		data.details,
+		'At least one line item with quantity > 0 is required'
+	);
+	if (!Array.isArray(validDetails)) return validDetails;
 
 	const now = new Date().toISOString();
 	const slip_number = await nextSequentialNumber(
@@ -397,21 +392,14 @@ export async function convertToReceivingSlip(
 			.returning({ id: schema.receivingSlips.id });
 		newSlipId = slip.id;
 
-		for (let i = 0; i < validDetails.length; i++) {
-			await ctx.db.insert(schema.receivingSlipDetails).values({
-				slip_id: slip.id,
-				product_id: validDetails[i].product_id,
-				line_no: i + 1,
-				quantity: validDetails[i].quantity
-			});
-		}
+		await insertDetails(validDetails, (row) =>
+			ctx.db.insert(schema.receivingSlipDetails).values({ slip_id: slip.id, ...row })
+		);
 		await upsertInventoryDelta(ctx.db, validDetails, '+', now);
 	} catch (err) {
-		if (newSlipId)
-			await ctx.db
-				.delete(schema.receivingSlips)
-				.where(eq(schema.receivingSlips.id, newSlipId))
-				.catch(() => {});
+		await tryCleanup(newSlipId, (id) =>
+			ctx.db.delete(schema.receivingSlips).where(eq(schema.receivingSlips.id, id))
+		);
 		const message = String(err);
 		if (message.includes('UNIQUE constraint failed') && message.includes('slip_number'))
 			return fail(409, { error: 'Slip number conflict. Please try again.' });
