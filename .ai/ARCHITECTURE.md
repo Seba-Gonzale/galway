@@ -1,4 +1,4 @@
-> **Último commit:** `62003c6` — `refactor: extract dashboard queries into loadDashboard service`
+> **Último commit:** `7d3cd6a` — `refactor: extract audit log listing into listAuditLogs service`
 
 ## Índice
 
@@ -95,6 +95,7 @@ galway/
 │   │       ├── inventory.ts, inventory_schedule.ts
 │   │       ├── customer.ts, settings.ts, reports.ts
 │   │       ├── dashboard.ts        # loadDashboard(ctx): 8 queries del dashboard (TASK-024)
+│   │       ├── audit.ts            # listAuditLogs(ctx, filters): paginación + filtros (TASK-025)
 │   │       ├── email.ts            # orquestación (welcome, passwordChanged, lowStockAlert)
 │   │       ├── product.test.ts, supplier.test.ts
 │   └── routes/
@@ -157,6 +158,7 @@ galway/
     - `productCodeMap(db)` — `Map<code, id>` de todos los productos.
     - `mapProductQuantities(dataRows, index, productMap, { allowZero })` — arma las líneas `{ product_id, quantity }` descartando códigos inexistentes y cantidades inválidas; `allowZero: true` solo en `importInventory` (acepta 0), receiving/shipping exigen `> 0`.
 15. **Dashboard** (`src/lib/services/dashboard.ts`, TASK-024): `loadDashboard(ctx)` encapsula las 8 queries que antes estaban inline en `src/routes/(app)/+page.server.ts` (conteos de suppliers/products, receiving/shipping del mes, low stock, receiving/shipping de hoy y settings). Devuelve `{ supplierCount, productCount, receivingCountThisMonth, shippingCountThisMonth, lowStockItems, todayReceiving, todayShipping }` — el mismo shape de antes — y respeta el setting `low_stock_alert_enabled`. La ruta ahora solo hace `loadDashboard(makeCtx(platform!, locals))`.
+16. **Audit logs** (`src/lib/services/audit.ts`, TASK-025): `listAuditLogs(ctx, filters)` con `filters = { action?, target?, user?, page?, itemsPerPage? }` (30 por página, como la ruta) devuelve `{ logs, totalItems, itemsPerPage, currentPage, filterAction, filterTarget, filterUser }`. Usa `paginate()` y selecciona **columnas explícitas** (id, user_id, user_name, action, target_type, target_id, target_label, detail, created_at) en vez del `select()` que antes traía todo. El check de admin (`error(403)`) sigue en `src/routes/(app)/audit-logs/+page.server.ts`, que ahora solo parsea los search params y llama al servicio.
 
 ## Styling Convention
 
