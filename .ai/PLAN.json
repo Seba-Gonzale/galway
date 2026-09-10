@@ -715,7 +715,7 @@
 			},
 
 			"acceptance": [
-				"Un helper parametrizado por dirección (in/out) cubre create/update/delete de receiving y shipping",
+				"Los helpers adjustInventory()/upsertInventoryDelta(), parametrizados por signo '+' | '-', cubren create/update/delete/import de receiving y shipping y la conversión de orden de compra",
 				"La reversa en edit/delete sigue aplicando el signo inverso correcto",
 				"El saldo de inventario tras create/update/delete es idéntico al anterior",
 				"Los tests existentes pasan"
