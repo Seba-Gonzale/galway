@@ -1,4 +1,4 @@
-> **Último commit:** `7d3cd6a` — `refactor: extract audit log listing into listAuditLogs service`
+> **Último commit:** `5fa2ab6` — `refactor: extract login auth and rate limit to service and centralize requireAdmin`
 
 ## Índice
 
@@ -159,6 +159,10 @@ galway/
     - `mapProductQuantities(dataRows, index, productMap, { allowZero })` — arma las líneas `{ product_id, quantity }` descartando códigos inexistentes y cantidades inválidas; `allowZero: true` solo en `importInventory` (acepta 0), receiving/shipping exigen `> 0`.
 15. **Dashboard** (`src/lib/services/dashboard.ts`, TASK-024): `loadDashboard(ctx)` encapsula las 8 queries que antes estaban inline en `src/routes/(app)/+page.server.ts` (conteos de suppliers/products, receiving/shipping del mes, low stock, receiving/shipping de hoy y settings). Devuelve `{ supplierCount, productCount, receivingCountThisMonth, shippingCountThisMonth, lowStockItems, todayReceiving, todayShipping }` — el mismo shape de antes — y respeta el setting `low_stock_alert_enabled`. La ruta ahora solo hace `loadDashboard(makeCtx(platform!, locals))`.
 16. **Audit logs** (`src/lib/services/audit.ts`, TASK-025): `listAuditLogs(ctx, filters)` con `filters = { action?, target?, user?, page?, itemsPerPage? }` (30 por página, como la ruta) devuelve `{ logs, totalItems, itemsPerPage, currentPage, filterAction, filterTarget, filterUser }`. Usa `paginate()` y selecciona **columnas explícitas** (id, user_id, user_name, action, target_type, target_id, target_label, detail, created_at) en vez del `select()` que antes traía todo. El check de admin (`error(403)`) sigue en `src/routes/(app)/audit-logs/+page.server.ts`, que ahora solo parsea los search params y llama al servicio.
+17. **Auth y permisos** (TASK-026):
+    - `src/lib/server/auth/index.ts` concentra el login: `checkRateLimit(db, ip)` (mensaje de error o `null`), `recordFailedAttempt(db, ip)` (5 intentos → bloqueo de 15 min por IP sobre `login_rate_limits`), `resetRateLimit(db, ip)` y `authenticateAccount(db, email, password)` (busca la cuenta y verifica PBKDF2). `src/routes/login/+page.server.ts` quedó reducido a parsear el form y orquestar esas 4 llamadas.
+    - Las funciones de sesión (`createSession`, `deleteSession`, `deleteAllSessionsForAccount`, `getSession`) aceptan `DbSource = drizzle | D1Database` vía `resolveDb()`: si el llamador ya tiene `ctx.db`, se reutiliza (una sola instancia por request); si pasa el binding crudo, se crea. Así `account.ts` usa `ctx.db` y los tests existentes que pasan `proxy.env.DB` siguen funcionando.
+    - `requireAdmin(ctx)` (lanza `error(403)`, para loads) y `requireAdminAction(ctx)` (devuelve `fail(403)` o `null`, para actions) viven en `src/lib/services/index.ts` y reemplazan los 10 checks manuales de `category.ts`, `account.ts` y `settings.ts`.
 
 ## Styling Convention
 
