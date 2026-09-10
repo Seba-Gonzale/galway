@@ -4,7 +4,7 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
-import { nextSequentialNumber, adjustInventory } from '$lib/services/shared';
+import { nextSequentialNumber, adjustInventory, paginate } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -33,10 +33,6 @@ export async function getSlipExportData(ctx: ServiceCtx, id: string) {
 }
 
 export async function listShippingSlips(ctx: ServiceCtx, search = '', page = 1) {
-	const itemsPerPage = 20;
-	const currentPage = Math.max(1, page);
-	const offset = (currentPage - 1) * itemsPerPage;
-
 	const whereClause = search
 		? or(
 				like(schema.shippingSlips.slip_number, `%${search}%`),
@@ -44,50 +40,56 @@ export async function listShippingSlips(ctx: ServiceCtx, search = '', page = 1) 
 			)
 		: undefined;
 
-	const [countResult, slips, products] = await Promise.all([
-		ctx.db
-			.select({ count: count() })
-			.from(schema.shippingSlips)
-			.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
-			.where(whereClause),
-		ctx.db
-			.select({
-				id: schema.shippingSlips.id,
-				slip_number: schema.shippingSlips.slip_number,
-				shipped_at: schema.shippingSlips.shipped_at,
-				customer_name: schema.customers.name,
-				item_count: count(schema.shippingSlipDetails.id),
-				user_name: schema.accounts.name
-			})
-			.from(schema.shippingSlips)
-			.leftJoin(schema.accounts, eq(schema.shippingSlips.account_id, schema.accounts.id))
-			.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
-			.leftJoin(
-				schema.shippingSlipDetails,
-				eq(schema.shippingSlips.id, schema.shippingSlipDetails.slip_id)
-			)
-			.where(whereClause)
-			.groupBy(schema.shippingSlips.id)
-			.orderBy(desc(schema.shippingSlips.shipped_at))
-			.limit(itemsPerPage)
-			.offset(offset),
-		ctx.db
-			.select({
-				id: schema.products.id,
-				code: schema.products.code,
-				name: schema.products.name,
-				unit: schema.products.unit
-			})
-			.from(schema.products)
-			.orderBy(asc(schema.products.code))
-	]);
+	const {
+		rows: slips,
+		extra: products,
+		...pagination
+	} = await paginate({
+		page,
+		count: () =>
+			ctx.db
+				.select({ count: count() })
+				.from(schema.shippingSlips)
+				.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
+				.where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					id: schema.shippingSlips.id,
+					slip_number: schema.shippingSlips.slip_number,
+					shipped_at: schema.shippingSlips.shipped_at,
+					customer_name: schema.customers.name,
+					item_count: count(schema.shippingSlipDetails.id),
+					user_name: schema.accounts.name
+				})
+				.from(schema.shippingSlips)
+				.leftJoin(schema.accounts, eq(schema.shippingSlips.account_id, schema.accounts.id))
+				.leftJoin(schema.customers, eq(schema.shippingSlips.customer_id, schema.customers.id))
+				.leftJoin(
+					schema.shippingSlipDetails,
+					eq(schema.shippingSlips.id, schema.shippingSlipDetails.slip_id)
+				)
+				.where(whereClause)
+				.groupBy(schema.shippingSlips.id)
+				.orderBy(desc(schema.shippingSlips.shipped_at))
+				.limit(limit)
+				.offset(offset),
+		extra: () =>
+			ctx.db
+				.select({
+					id: schema.products.id,
+					code: schema.products.code,
+					name: schema.products.name,
+					unit: schema.products.unit
+				})
+				.from(schema.products)
+				.orderBy(asc(schema.products.code))
+	});
 
 	return {
 		slips,
 		products,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search
 	};
 }

@@ -2,5 +2,7 @@ export { handleDbError } from './error';
 export { auditLog } from './audit';
 export { nextSequentialNumber } from './numbering';
 export { adjustInventory, upsertInventoryDelta } from './inventory';
+export { paginate, DEFAULT_ITEMS_PER_PAGE } from './pagination';
 export type { AuditOptions } from './audit';
 export type { InventoryDelta, InventorySign } from './inventory';
+export type { PaginateOptions, Paginated } from './pagination';

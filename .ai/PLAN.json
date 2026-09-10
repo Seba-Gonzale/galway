@@ -724,7 +724,7 @@
 
 		"TASK-021": {
 			"module": "MOD-018",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Unificar la paginación y el count paralelo de las 7 funciones list* en un helper compartido",
 

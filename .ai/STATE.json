@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-021",
+		"task": "TASK-022",
 		"status": "ON_HOLD",
-		"note": "Siguiente paso de MOD-018: unificar la paginación y el count paralelo de las 7 funciones list* (product, supplier, purchasing, receiving, shipping, inventory, account) en un helper compartido. Depende de TASK-018 (cumplida) y tiene impact.other_modules=false, por lo que es de bajo riesgo. Esperando confirmación para proceder."
+		"note": "Siguiente paso de MOD-018 por orden: unificar validateLineItems(), insertDetails() y tryCleanup() (27 instancias de inserción de detalles y rollback de la fila padre). Depende de TASK-020 (cumplida) y tiene impact.other_modules=false. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-020",
-		"at": "2026-09-09T22:02:45-03:00"
+		"task": "TASK-021",
+		"at": "2026-09-10T07:52:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-021: crear helper de paginación en src/lib/services/shared/ y reemplazar el boilerplate de las 7 funciones list*",
+	"next_action": "Confirmar e implementar TASK-022: crear helpers validateLineItems()/insertDetails()/tryCleanup() en src/lib/services/shared/ y reemplazar el boilerplate en purchasing, receiving y shipping",
 
-	"updated_at": "2026-09-09T22:02:45-03:00"
+	"updated_at": "2026-09-10T07:52:00-03:00"
 }

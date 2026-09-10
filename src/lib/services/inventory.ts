@@ -3,6 +3,7 @@ import { eq, asc, like, or, and, count, inArray } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
+import { paginate } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listInventory(
@@ -60,40 +61,46 @@ export async function listInventory(
 			? and(searchCondition, supplierCondition)
 			: (searchCondition ?? supplierCondition);
 
-	const offset = (currentPage - 1) * itemsPerPage;
-
-	const [countResult, inventoryRows, products] = await Promise.all([
-		ctx.db
-			.select({ count: count() })
-			.from(schema.products)
-			.leftJoin(schema.inventory, eq(schema.products.id, schema.inventory.product_id))
-			.where(whereClause),
-		ctx.db
-			.select({
-				product_id: schema.products.id,
-				product_code: schema.products.code,
-				product_name: schema.products.name,
-				quantity: schema.inventory.quantity,
-				unit: schema.products.unit,
-				min_quantity: schema.products.min_quantity,
-				updated_at: schema.inventory.updated_at
-			})
-			.from(schema.products)
-			.leftJoin(schema.inventory, eq(schema.products.id, schema.inventory.product_id))
-			.where(whereClause)
-			.orderBy(asc(schema.products.code))
-			.limit(itemsPerPage)
-			.offset(offset),
-		ctx.db
-			.select({
-				id: schema.products.id,
-				code: schema.products.code,
-				name: schema.products.name,
-				unit: schema.products.unit
-			})
-			.from(schema.products)
-			.orderBy(asc(schema.products.code))
-	]);
+	const {
+		rows: inventoryRows,
+		extra: products,
+		...pagination
+	} = await paginate({
+		page,
+		count: () =>
+			ctx.db
+				.select({ count: count() })
+				.from(schema.products)
+				.leftJoin(schema.inventory, eq(schema.products.id, schema.inventory.product_id))
+				.where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					product_id: schema.products.id,
+					product_code: schema.products.code,
+					product_name: schema.products.name,
+					quantity: schema.inventory.quantity,
+					unit: schema.products.unit,
+					min_quantity: schema.products.min_quantity,
+					updated_at: schema.inventory.updated_at
+				})
+				.from(schema.products)
+				.leftJoin(schema.inventory, eq(schema.products.id, schema.inventory.product_id))
+				.where(whereClause)
+				.orderBy(asc(schema.products.code))
+				.limit(limit)
+				.offset(offset),
+		extra: () =>
+			ctx.db
+				.select({
+					id: schema.products.id,
+					code: schema.products.code,
+					name: schema.products.name,
+					unit: schema.products.unit
+				})
+				.from(schema.products)
+				.orderBy(asc(schema.products.code))
+	});
 
 	return {
 		inventory: inventoryRows.map((item) => ({
@@ -103,9 +110,7 @@ export async function listInventory(
 			updated_at: item.updated_at ?? ''
 		})),
 		products,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search,
 		supplierId,
 		suppliers

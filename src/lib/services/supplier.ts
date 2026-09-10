@@ -4,47 +4,54 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { supplierSchema } from '$lib/validation';
+import { paginate } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listSuppliers(ctx: ServiceCtx, search: string, page: number) {
-	const itemsPerPage = 20;
-	const currentPage = Math.max(1, page);
 	const whereClause = search ? like(schema.suppliers.name, `%${search}%`) : undefined;
-	const offset = (currentPage - 1) * itemsPerPage;
 
-	const [countResult, suppliers, allProducts, supplierProductRows] = await Promise.all([
-		ctx.db.select({ count: count() }).from(schema.suppliers).where(whereClause),
-		ctx.db
-			.select({
-				id: schema.suppliers.id,
-				name: schema.suppliers.name,
-				tel: schema.suppliers.tel,
-				fax: schema.suppliers.fax,
-				zipcode: schema.suppliers.zipcode,
-				address: schema.suppliers.address,
-				email: schema.suppliers.email
-			})
-			.from(schema.suppliers)
-			.where(whereClause)
-			.orderBy(asc(schema.suppliers.name))
-			.limit(itemsPerPage)
-			.offset(offset),
-		ctx.db
-			.select({
-				id: schema.products.id,
-				code: schema.products.code,
-				name: schema.products.name,
-				unit: schema.products.unit
-			})
-			.from(schema.products)
-			.orderBy(asc(schema.products.code)),
-		ctx.db
-			.select({
-				supplier_id: schema.supplierProducts.supplier_id,
-				product_id: schema.supplierProducts.product_id
-			})
-			.from(schema.supplierProducts)
-	]);
+	const {
+		rows: suppliers,
+		extra: [allProducts, supplierProductRows],
+		...pagination
+	} = await paginate({
+		page,
+		count: () => ctx.db.select({ count: count() }).from(schema.suppliers).where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					id: schema.suppliers.id,
+					name: schema.suppliers.name,
+					tel: schema.suppliers.tel,
+					fax: schema.suppliers.fax,
+					zipcode: schema.suppliers.zipcode,
+					address: schema.suppliers.address,
+					email: schema.suppliers.email
+				})
+				.from(schema.suppliers)
+				.where(whereClause)
+				.orderBy(asc(schema.suppliers.name))
+				.limit(limit)
+				.offset(offset),
+		extra: () =>
+			Promise.all([
+				ctx.db
+					.select({
+						id: schema.products.id,
+						code: schema.products.code,
+						name: schema.products.name,
+						unit: schema.products.unit
+					})
+					.from(schema.products)
+					.orderBy(asc(schema.products.code)),
+				ctx.db
+					.select({
+						supplier_id: schema.supplierProducts.supplier_id,
+						product_id: schema.supplierProducts.product_id
+					})
+					.from(schema.supplierProducts)
+			])
+	});
 
 	const supplierProductMap: Record<string, string[]> = {};
 	for (const row of supplierProductRows) {
@@ -56,9 +63,7 @@ export async function listSuppliers(ctx: ServiceCtx, search: string, page: numbe
 		suppliers,
 		allProducts,
 		supplierProductMap,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search
 	};
 }

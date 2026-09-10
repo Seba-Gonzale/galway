@@ -9,26 +9,28 @@ import {
 } from '$lib/server/auth';
 import { accountCreateSchema, accountUpdateSchema, profileUpdateSchema } from '$lib/validation';
 import { sendWelcomeEmail, sendPasswordChangedEmail } from '$lib/services/email';
+import { paginate } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listAccounts(ctx: ServiceCtx, search: string, page: number) {
 	if (ctx.user.role !== 'admin') throw error(403, 'Access denied');
 
-	const itemsPerPage = 30;
-	const currentPage = Math.max(1, page);
 	const whereClause = search
 		? or(like(schema.accounts.name, `%${search}%`), like(schema.accounts.email, `%${search}%`))
 		: undefined;
 
-	const [countResult, accounts] = await Promise.all([
-		ctx.db.select({ count: count() }).from(schema.accounts).where(whereClause),
-		ctx.db.query.accounts.findMany({
-			where: whereClause,
-			orderBy: [desc(schema.accounts.created_at)],
-			limit: itemsPerPage,
-			offset: (currentPage - 1) * itemsPerPage
-		})
-	]);
+	const { rows: accounts, ...pagination } = await paginate({
+		page,
+		itemsPerPage: 30,
+		count: () => ctx.db.select({ count: count() }).from(schema.accounts).where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db.query.accounts.findMany({
+				where: whereClause,
+				orderBy: [desc(schema.accounts.created_at)],
+				limit,
+				offset
+			})
+	});
 
 	return {
 		accounts: accounts.map((a) => ({
@@ -39,9 +41,7 @@ export async function listAccounts(ctx: ServiceCtx, search: string, page: number
 			created_at: a.created_at
 		})),
 		currentUserId: ctx.user.id,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search
 	};
 }

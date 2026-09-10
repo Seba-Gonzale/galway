@@ -3,50 +3,46 @@ import { eq, desc, count, asc } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
-import { nextSequentialNumber, upsertInventoryDelta } from '$lib/services/shared';
+import { nextSequentialNumber, upsertInventoryDelta, paginate } from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function listPurchaseOrders(ctx: ServiceCtx, status = '', page = 1) {
-	const itemsPerPage = 20;
-	const currentPage = Math.max(1, page);
-	const offset = (currentPage - 1) * itemsPerPage;
-
 	const whereClause = status
 		? eq(schema.purchaseOrders.status, status as 'draft' | 'ordered' | 'received' | 'cancelled')
 		: undefined;
 
-	const [countResult, orders] = await Promise.all([
-		ctx.db.select({ count: count() }).from(schema.purchaseOrders).where(whereClause),
-		ctx.db
-			.select({
-				id: schema.purchaseOrders.id,
-				order_number: schema.purchaseOrders.order_number,
-				ordered_at: schema.purchaseOrders.ordered_at,
-				expected_at: schema.purchaseOrders.expected_at,
-				supplier_name: schema.suppliers.name,
-				status: schema.purchaseOrders.status,
-				item_count: count(schema.purchaseOrderDetails.id),
-				user_name: schema.accounts.name
-			})
-			.from(schema.purchaseOrders)
-			.leftJoin(schema.suppliers, eq(schema.purchaseOrders.supplier_id, schema.suppliers.id))
-			.leftJoin(schema.accounts, eq(schema.purchaseOrders.account_id, schema.accounts.id))
-			.leftJoin(
-				schema.purchaseOrderDetails,
-				eq(schema.purchaseOrders.id, schema.purchaseOrderDetails.order_id)
-			)
-			.where(whereClause)
-			.groupBy(schema.purchaseOrders.id)
-			.orderBy(desc(schema.purchaseOrders.ordered_at))
-			.limit(itemsPerPage)
-			.offset(offset)
-	]);
+	const { rows: orders, ...pagination } = await paginate({
+		page,
+		count: () => ctx.db.select({ count: count() }).from(schema.purchaseOrders).where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					id: schema.purchaseOrders.id,
+					order_number: schema.purchaseOrders.order_number,
+					ordered_at: schema.purchaseOrders.ordered_at,
+					expected_at: schema.purchaseOrders.expected_at,
+					supplier_name: schema.suppliers.name,
+					status: schema.purchaseOrders.status,
+					item_count: count(schema.purchaseOrderDetails.id),
+					user_name: schema.accounts.name
+				})
+				.from(schema.purchaseOrders)
+				.leftJoin(schema.suppliers, eq(schema.purchaseOrders.supplier_id, schema.suppliers.id))
+				.leftJoin(schema.accounts, eq(schema.purchaseOrders.account_id, schema.accounts.id))
+				.leftJoin(
+					schema.purchaseOrderDetails,
+					eq(schema.purchaseOrders.id, schema.purchaseOrderDetails.order_id)
+				)
+				.where(whereClause)
+				.groupBy(schema.purchaseOrders.id)
+				.orderBy(desc(schema.purchaseOrders.ordered_at))
+				.limit(limit)
+				.offset(offset)
+	});
 
 	return {
 		orders,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		statusFilter: status
 	};
 }

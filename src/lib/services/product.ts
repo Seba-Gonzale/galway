@@ -3,7 +3,7 @@ import { eq, asc, like, or, and, count } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
-import { handleDbError } from '$lib/services/shared';
+import { handleDbError, paginate } from '$lib/services/shared';
 import { productSchema } from '$lib/validation';
 import type { ServiceCtx } from '$lib/services';
 
@@ -13,9 +13,6 @@ export async function listProducts(
 	page: number,
 	category: string
 ) {
-	const itemsPerPage = 20;
-	const currentPage = Math.max(1, page);
-
 	const searchCondition = search
 		? or(like(schema.products.code, `%${search}%`), like(schema.products.name, `%${search}%`))
 		: undefined;
@@ -25,42 +22,45 @@ export async function listProducts(
 			? and(searchCondition, categoryCondition)
 			: (searchCondition ?? categoryCondition);
 
-	const offset = (currentPage - 1) * itemsPerPage;
-
-	const [countResult, products, categories] = await Promise.all([
-		ctx.db.select({ count: count() }).from(schema.products).where(whereClause),
-		ctx.db
-			.select({
-				id: schema.products.id,
-				code: schema.products.code,
-				name: schema.products.name,
-				unit: schema.products.unit,
-				description: schema.products.description,
-				category_id: schema.products.category_id,
-				category_name: schema.productCategories.name,
-				min_quantity: schema.products.min_quantity
-			})
-			.from(schema.products)
-			.leftJoin(
-				schema.productCategories,
-				eq(schema.products.category_id, schema.productCategories.id)
-			)
-			.where(whereClause)
-			.orderBy(asc(schema.products.code))
-			.limit(itemsPerPage)
-			.offset(offset),
-		ctx.db
-			.select({ id: schema.productCategories.id, name: schema.productCategories.name })
-			.from(schema.productCategories)
-			.orderBy(asc(schema.productCategories.name))
-	]);
+	const {
+		rows: products,
+		extra: categories,
+		...pagination
+	} = await paginate({
+		page,
+		count: () => ctx.db.select({ count: count() }).from(schema.products).where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					id: schema.products.id,
+					code: schema.products.code,
+					name: schema.products.name,
+					unit: schema.products.unit,
+					description: schema.products.description,
+					category_id: schema.products.category_id,
+					category_name: schema.productCategories.name,
+					min_quantity: schema.products.min_quantity
+				})
+				.from(schema.products)
+				.leftJoin(
+					schema.productCategories,
+					eq(schema.products.category_id, schema.productCategories.id)
+				)
+				.where(whereClause)
+				.orderBy(asc(schema.products.code))
+				.limit(limit)
+				.offset(offset),
+		extra: () =>
+			ctx.db
+				.select({ id: schema.productCategories.id, name: schema.productCategories.name })
+				.from(schema.productCategories)
+				.orderBy(asc(schema.productCategories.name))
+	});
 
 	return {
 		products,
 		categories,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search,
 		categoryFilter: category
 	};

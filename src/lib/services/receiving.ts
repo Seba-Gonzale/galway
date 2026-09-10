@@ -4,7 +4,12 @@ import * as schema from '$lib/server/db/schema';
 import { parseCSV } from '$lib/utils/csv';
 import { logAudit } from '$lib/server/audit';
 import { notifyLowStockForProducts } from '$lib/services/email';
-import { nextSequentialNumber, adjustInventory, upsertInventoryDelta } from '$lib/services/shared';
+import {
+	nextSequentialNumber,
+	adjustInventory,
+	upsertInventoryDelta,
+	paginate
+} from '$lib/services/shared';
 import type { ServiceCtx } from '$lib/services';
 
 export async function getSlipExportData(ctx: ServiceCtx, id: string) {
@@ -35,10 +40,6 @@ export async function getSlipExportData(ctx: ServiceCtx, id: string) {
 }
 
 export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1) {
-	const itemsPerPage = 20;
-	const currentPage = Math.max(1, page);
-	const offset = (currentPage - 1) * itemsPerPage;
-
 	const whereClause = search
 		? or(
 				like(schema.receivingSlips.slip_number, `%${search}%`),
@@ -46,56 +47,64 @@ export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1)
 			)
 		: undefined;
 
-	const [countResult, slips, suppliers, products] = await Promise.all([
-		ctx.db
-			.select({ count: count() })
-			.from(schema.receivingSlips)
-			.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
-			.where(whereClause),
-		ctx.db
-			.select({
-				id: schema.receivingSlips.id,
-				slip_number: schema.receivingSlips.slip_number,
-				received_at: schema.receivingSlips.received_at,
-				supplier_id: schema.receivingSlips.supplier_id,
-				supplier_name: schema.suppliers.name,
-				item_count: count(schema.receivingSlipDetails.id),
-				user_name: schema.accounts.name
-			})
-			.from(schema.receivingSlips)
-			.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
-			.leftJoin(schema.accounts, eq(schema.receivingSlips.account_id, schema.accounts.id))
-			.leftJoin(
-				schema.receivingSlipDetails,
-				eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id)
-			)
-			.where(whereClause)
-			.groupBy(schema.receivingSlips.id)
-			.orderBy(desc(schema.receivingSlips.received_at))
-			.limit(itemsPerPage)
-			.offset(offset),
-		ctx.db
-			.select({ id: schema.suppliers.id, name: schema.suppliers.name })
-			.from(schema.suppliers)
-			.orderBy(asc(schema.suppliers.name)),
-		ctx.db
-			.select({
-				id: schema.products.id,
-				code: schema.products.code,
-				name: schema.products.name,
-				unit: schema.products.unit
-			})
-			.from(schema.products)
-			.orderBy(asc(schema.products.code))
-	]);
+	const {
+		rows: slips,
+		extra: [suppliers, products],
+		...pagination
+	} = await paginate({
+		page,
+		count: () =>
+			ctx.db
+				.select({ count: count() })
+				.from(schema.receivingSlips)
+				.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
+				.where(whereClause),
+		rows: (limit, offset) =>
+			ctx.db
+				.select({
+					id: schema.receivingSlips.id,
+					slip_number: schema.receivingSlips.slip_number,
+					received_at: schema.receivingSlips.received_at,
+					supplier_id: schema.receivingSlips.supplier_id,
+					supplier_name: schema.suppliers.name,
+					item_count: count(schema.receivingSlipDetails.id),
+					user_name: schema.accounts.name
+				})
+				.from(schema.receivingSlips)
+				.leftJoin(schema.suppliers, eq(schema.receivingSlips.supplier_id, schema.suppliers.id))
+				.leftJoin(schema.accounts, eq(schema.receivingSlips.account_id, schema.accounts.id))
+				.leftJoin(
+					schema.receivingSlipDetails,
+					eq(schema.receivingSlips.id, schema.receivingSlipDetails.slip_id)
+				)
+				.where(whereClause)
+				.groupBy(schema.receivingSlips.id)
+				.orderBy(desc(schema.receivingSlips.received_at))
+				.limit(limit)
+				.offset(offset),
+		extra: () =>
+			Promise.all([
+				ctx.db
+					.select({ id: schema.suppliers.id, name: schema.suppliers.name })
+					.from(schema.suppliers)
+					.orderBy(asc(schema.suppliers.name)),
+				ctx.db
+					.select({
+						id: schema.products.id,
+						code: schema.products.code,
+						name: schema.products.name,
+						unit: schema.products.unit
+					})
+					.from(schema.products)
+					.orderBy(asc(schema.products.code))
+			])
+	});
 
 	return {
 		slips,
 		suppliers,
 		products,
-		totalItems: countResult[0]?.count ?? 0,
-		itemsPerPage,
-		currentPage,
+		...pagination,
 		searchQuery: search
 	};
 }
