@@ -38,6 +38,21 @@ El header de `ARCHITECTURE.md` (`> **Último commit:**`) debe coincidir con `git
   - Resúmenes innecesarios.
   - Cambios no solicitados.
 
+## Herramientas: plugin de Svelte (MCP)
+
+El proyecto tiene instalado el plugin `@sveltejs/opencode` (ver `.opencode/opencode.json`), que aporta:
+
+- **MCP de Svelte**: `list-sections` (descubrir las secciones de documentación disponibles), `get-documentation` (traer el contenido de una o más secciones), `svelte-autofixer` (analizar código Svelte y devolver issues/sugerencias) y `playground-link` (generar un enlace al Svelte Playground).
+- **Subagente `svelte-file-editor`**: se usa al crear, editar o revisar archivos `.svelte`, `.svelte.ts` y `.svelte.js`.
+- **Skills**: `svelte-code-writer` y `svelte-core-bestpractices`.
+
+Cómo usarlas:
+
+- Antes de escribir o modificar un componente `.svelte`, llamá a `list-sections` y después a `get-documentation` de las secciones relevantes (runes: `$state` / `$derived` / `$effect`, `$props`, snippets, bindings; en SvelteKit: `load`, form actions, `resolve`).
+- Al terminar de escribir código Svelte, pasá `svelte-autofixer` y corregí lo que marque antes de dar el cambio por terminado.
+- `playground-link` solo si el usuario lo pide explícitamente y el código **no** se escribió en archivos del proyecto.
+- Si las tools MCP no están disponibles en la sesión (no figuran en la lista de herramientas), decilo en vez de simularlas, y seguí con la documentación local y `bun run check` / `bun run lint`.
+
 ## Constraints de Cloudflare Workers
 
 El proyecto corre en Cloudflare Pages (runtime Workers, sin Node). Al escribir código server-side:
