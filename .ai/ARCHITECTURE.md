@@ -1,4 +1,4 @@
-> **Último commit:** `27a829b` — `perf: batch inventory adjustments and detail inserts to remove N+1`
+> **Último commit:** `cab78a7` — `perf: batch inventory upserts in importInventory and product import`
 
 ## Índice
 
@@ -169,6 +169,8 @@ galway/
     - `upsertInventoryDelta()` y `adjustInventory()` (`shared/inventory.ts`): los 11 call sites de receiving/shipping/purchasing pasan de una query por línea a un round trip por lote, con el mismo SQL (UPSERT vs UPDATE) y el mismo saldo final.
     - `insertDetails(db, items, buildInsert)` (`shared/details.ts`): cambió de `insertRow` (callback awaiteado) a `buildInsert`, que devuelve el statement **sin** await, para poder lotear los inserts de detalles (9 call sites).
       Se descartaron `INSERT` multi-row con `excluded.quantity` y `UPDATE ... CASE WHEN` porque, si dos líneas traen el mismo `product_id`, SQLite aplica una sola de ellas, mientras que el bucle original aplicaba ambas.
+    - `importInventory()` (`services/inventory.ts`) e `importProducts()` (`services/product.ts`): TASK-032 cerró el N+1 que quedó fuera del `allowed_scope` de TASK-027 (un upsert por registro importado y un insert de `inventory` por producto creado).
+      Medición real contra D1 local instrumentando el binding (5 líneas): `adjustInventory` pasó de **5 a 1** round trip y el alta de remito completa (slip + detalles + inventario) de **11 a 3**. Los tests de `shared/batch.test.ts` fijan esa propiedad (1 batch por lote, chunking de 50).
 
 ## Styling Convention
 
