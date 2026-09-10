@@ -141,7 +141,7 @@ galway/
 11. **Ajuste de inventario** (`src/lib/services/shared/inventory.ts`, TASK-020): existen **dos** helpers con semántica distinta, deliberadamente NO unificados porque el código original usaba dos estrategias SQL diferentes:
     - `upsertInventoryDelta(db, items, sign, now)` — `INSERT ... ON CONFLICT DO UPDATE`: crea la fila de `inventory` si el producto no tenía una. La usan las operaciones que **suman** stock y históricamente creaban la fila: `createReceivingSlip`, la parte "aplicar" de `updateReceivingSlip`, `importReceivingSlips` y `convertToReceivingSlip`.
     - `adjustInventory(db, items, sign, now)` — `UPDATE` simple: **no hace nada** si la fila no existe. La usan shipping (resta) y todas las **reversiones** de editar/borrar.
-    `sign` es `'+' | '-'` explícito en el call site (no `'in'/'out'`), para que el signo sea legible y auditable. `stocktake()` e `importInventory()` (en `services/inventory.ts`) **no** usan estos helpers: fijan cantidades absolutas, no deltas.
+      `sign` es `'+' | '-'` explícito en el call site (no `'in'/'out'`), para que el signo sea legible y auditable. `stocktake()` e `importInventory()` (en `services/inventory.ts`) **no** usan estos helpers: fijan cantidades absolutas, no deltas.
 
 ## Styling Convention
 
