@@ -822,7 +822,7 @@
 
 		"TASK-024": {
 			"module": "MOD-019",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Extraer la lógica del dashboard a src/lib/services/dashboard.ts (hoy 8 queries Drizzle inline en la ruta)",
 

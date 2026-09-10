@@ -20,7 +20,7 @@ import { parseImportCsv, requireRecords, mapProductQuantities, productCodeMap } 
 const PRODUCT_COLUMNS = [
 	{ key: 'code', names: ['Product Code'], required: true },
 	{ key: 'quantity', names: ['Quantity'], required: true }
-] as const;
+];
 
 describe('parseImportCsv', () => {
 	it('rechaza un modo que no sea append ni replace', () => {

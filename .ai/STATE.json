@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-024",
+		"task": "TASK-025",
 		"status": "ON_HOLD",
-		"note": "Fin de MOD-018 (TASK-018..023 completadas). Siguiente por orden: MOD-019 TASK-024, extraer la lógica del dashboard (8 queries Drizzle inline en src/routes/(app)/+page.server.ts) a src/lib/services/dashboard.ts. Depende de TASK-021 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/server/db/**. Esperando confirmación para proceder."
+		"note": "Siguiente de MOD-019 por orden: TASK-025, extraer la lectura de audit logs a src/lib/services/audit.ts con paginación y filtros (action/target/user) y dejar de usar select() en la ruta (trae el JSON detail). Depende de TASK-021 (cumplida) y tiene impact.other_modules=false; protected_scope src/lib/server/db/schema.ts. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-023",
-		"at": "2026-09-10T17:12:00-03:00"
+		"task": "TASK-024",
+		"at": "2026-09-10T17:31:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-024: loadDashboard(ctx) en src/lib/services/dashboard.ts y dejar la ruta (app)/+page.server.ts solo parseando parámetros",
+	"next_action": "Confirmar e implementar TASK-025: listAuditLogs(ctx, filters) en src/lib/services/audit.ts y que src/routes/(app)/audit-logs/+page.server.ts solo parsee parámetros y llame al servicio",
 
-	"updated_at": "2026-09-10T17:12:00-03:00"
+	"updated_at": "2026-09-10T17:31:00-03:00"
 }
