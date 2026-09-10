@@ -694,7 +694,7 @@
 			"module": "MOD-018",
 			"status": "COMPLETED",
 
-			"objective": "Unificar el ajuste de inventario en adjustInventory()/upsertInventoryAdd() y eliminar las 7 instancias duplicadas (solo cambia el signo)",
+			"objective": "Unificar el ajuste de inventario en adjustInventory()/upsertInventoryDelta() y eliminar las 11 instancias duplicadas (5 receiving, 5 shipping, 1 purchasing; solo cambia el signo y la estrategia UPSERT vs UPDATE)",
 
 			"dependencies": ["TASK-019"],
 
