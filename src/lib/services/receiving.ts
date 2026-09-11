@@ -115,6 +115,25 @@ export async function listReceivingSlips(ctx: ServiceCtx, search = '', page = 1)
 	};
 }
 
+export async function getReceivingSlipForNew(ctx: ServiceCtx) {
+	const [suppliers, products] = await Promise.all([
+		ctx.db
+			.select({ id: schema.suppliers.id, name: schema.suppliers.name })
+			.from(schema.suppliers)
+			.orderBy(asc(schema.suppliers.name)),
+		ctx.db
+			.select({
+				id: schema.products.id,
+				code: schema.products.code,
+				name: schema.products.name,
+				unit: schema.products.unit
+			})
+			.from(schema.products)
+			.orderBy(asc(schema.products.code))
+	]);
+	return { suppliers, products };
+}
+
 export async function getReceivingSlip(ctx: ServiceCtx, id: string) {
 	const [slipRows, details, suppliers, products] = await Promise.all([
 		ctx.db
@@ -172,11 +191,13 @@ export async function getReceivingSlip(ctx: ServiceCtx, id: string) {
 }
 
 export async function getReceivingSlipForEdit(ctx: ServiceCtx, id: string) {
-	const base = await getReceivingSlip(ctx, id);
-	const accounts = await ctx.db
-		.select({ id: schema.accounts.id, name: schema.accounts.name })
-		.from(schema.accounts)
-		.orderBy(asc(schema.accounts.name));
+	const [base, accounts] = await Promise.all([
+		getReceivingSlip(ctx, id),
+		ctx.db
+			.select({ id: schema.accounts.id, name: schema.accounts.name })
+			.from(schema.accounts)
+			.orderBy(asc(schema.accounts.name))
+	]);
 	return { ...base, accounts, isAdmin: ctx.user.role === 'admin' };
 }
 

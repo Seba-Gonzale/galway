@@ -197,16 +197,18 @@ export async function getShippingSlip(ctx: ServiceCtx, id: string) {
 }
 
 export async function getShippingSlipForEdit(ctx: ServiceCtx, id: string) {
-	const base = await getShippingSlip(ctx, id);
-	const [accounts, customers] = await Promise.all([
-		ctx.db
-			.select({ id: schema.accounts.id, name: schema.accounts.name })
-			.from(schema.accounts)
-			.orderBy(asc(schema.accounts.name)),
-		ctx.db
-			.select({ id: schema.customers.id, name: schema.customers.name })
-			.from(schema.customers)
-			.orderBy(asc(schema.customers.name))
+	const [base, [accounts, customers]] = await Promise.all([
+		getShippingSlip(ctx, id),
+		Promise.all([
+			ctx.db
+				.select({ id: schema.accounts.id, name: schema.accounts.name })
+				.from(schema.accounts)
+				.orderBy(asc(schema.accounts.name)),
+			ctx.db
+				.select({ id: schema.customers.id, name: schema.customers.name })
+				.from(schema.customers)
+				.orderBy(asc(schema.customers.name))
+		])
 	]);
 	return { ...base, accounts, customers, isAdmin: ctx.user.role === 'admin' };
 }

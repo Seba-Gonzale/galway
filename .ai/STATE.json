@@ -2,17 +2,17 @@
 	"project_status": "IN_PROGRESS",
 
 	"current": {
-		"task": "TASK-029",
+		"task": "TASK-030",
 		"status": "ON_HOLD",
-		"note": "TASK-028 completada. Siguiente de MOD-020 por orden: TASK-029, paralelizar loads secuenciales y crear funciones getXFormData dedicadas para receiving/new y shipping/new. Esperando confirmación para proceder."
+		"note": "TASK-029 completada. Siguiente tarea: TASK-030 (MOD-021), optimizar la carga de UI con imports individuales de @lucide/svelte y eliminar exports muertos del barrel de UI. Esperando confirmación para proceder."
 	},
 
 	"last_completed": {
-		"task": "TASK-028",
-		"at": "2026-09-10T22:25:00-03:00"
+		"task": "TASK-029",
+		"at": "2026-09-10T22:40:00-03:00"
 	},
 
-	"next_action": "Confirmar e implementar TASK-029: paralelizar loads secuenciales y crear funciones getXFormData dedicadas para receiving/new y shipping/new",
+	"next_action": "Confirmar e implementar TASK-030: imports individuales de @lucide/svelte y limpieza de exports muertos del barrel de UI",
 
-	"updated_at": "2026-09-10T22:25:00-03:00"
+	"updated_at": "2026-09-10T22:40:00-03:00"
 }

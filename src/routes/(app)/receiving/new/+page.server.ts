@@ -1,10 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import { makeCtx } from '$lib/services';
-import { listReceivingSlips, createReceivingSlip } from '$lib/services/receiving';
+import { getReceivingSlipForNew, createReceivingSlip } from '$lib/services/receiving';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ platform, locals }) => {
-	const { suppliers, products } = await listReceivingSlips(makeCtx(platform!, locals));
+	const { suppliers, products } = await getReceivingSlipForNew(makeCtx(platform!, locals));
 	return { suppliers, products };
 };
 
