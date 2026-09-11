@@ -2,17 +2,9 @@ import { fail } from '@sveltejs/kit';
 import { eq, desc } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
 import { sendAdminAlertSilent } from '$lib/services/email';
+import { getSettings } from '$lib/services/settings';
 import type { ServiceCtx } from '$lib/services';
 import type { InventorySchedule } from '$lib/types/inventory';
-
-async function getEmailLocale(ctx: ServiceCtx): Promise<'en' | 'ja'> {
-	const rows = await ctx.db
-		.select({ value: schema.settings.value })
-		.from(schema.settings)
-		.where(eq(schema.settings.key, 'email_locale'))
-		.limit(1);
-	return rows[0]?.value === 'ja' ? 'ja' : 'en';
-}
 
 export async function listInventorySchedules(ctx: ServiceCtx) {
 	const schedules = await ctx.db
@@ -74,7 +66,8 @@ export async function updateInventoryScheduleStatus(
 	}
 
 	if (status === 'in_progress' && schedule) {
-		getEmailLocale(ctx)
+		getSettings(ctx)
+			.then((settings) => settings.email_locale)
 			.then((locale) => {
 				const subject =
 					locale === 'ja' ? `棚卸開始: ${schedule.title}` : `Stocktake Started: ${schedule.title}`;

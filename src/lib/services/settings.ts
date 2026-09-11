@@ -3,21 +3,36 @@ import * as schema from '$lib/server/db/schema';
 import { logAudit } from '$lib/server/audit';
 import { settingsSchema } from '$lib/validation';
 import { requireAdmin } from '$lib/services';
-import type { ServiceCtx } from '$lib/services';
+import type { ServiceCtx, ServiceSettings } from '$lib/services';
 
 type SettingKey =
 	'notification_email' | 'low_stock_alert_enabled' | 'alert_email_enabled' | 'email_locale';
 
-export async function loadSettings(ctx: ServiceCtx) {
-	requireAdmin(ctx);
+async function readSettings(ctx: ServiceCtx): Promise<ServiceSettings> {
 	const rows = await ctx.db.select().from(schema.settings);
 	const map = Object.fromEntries(rows.map((r) => [r.key, r.value])) as Record<string, string>;
 	return {
+		notification_email: map['notification_email'] ?? '',
+		low_stock_alert_enabled: map['low_stock_alert_enabled'] !== 'false',
+		alert_email_enabled:
+			map['alert_email_enabled'] === undefined ? undefined : map['alert_email_enabled'] === 'true',
+		email_locale: (map['email_locale'] === 'ja' ? 'ja' : 'en') as 'en' | 'ja'
+	};
+}
+
+/** Reads settings once and reuses the result for the lifetime of this request. */
+export function getSettings(ctx: ServiceCtx): Promise<ServiceSettings> {
+	ctx.settings ??= readSettings(ctx);
+	return ctx.settings;
+}
+
+export async function loadSettings(ctx: ServiceCtx) {
+	requireAdmin(ctx);
+	const settings = await getSettings(ctx);
+	return {
 		settings: {
-			notification_email: map['notification_email'] ?? '',
-			low_stock_alert_enabled: map['low_stock_alert_enabled'] !== 'false',
-			alert_email_enabled: map['alert_email_enabled'] === 'true',
-			email_locale: (map['email_locale'] === 'ja' ? 'ja' : 'en') as 'en' | 'ja'
+			...settings,
+			alert_email_enabled: settings.alert_email_enabled === true
 		}
 	};
 }
@@ -52,6 +67,7 @@ export async function saveSettings(
 				.values({ key, value, updated_at: now })
 				.onConflictDoUpdate({ target: schema.settings.key, set: { value, updated_at: now } });
 		}
+		ctx.settings = undefined;
 		await logAudit({
 			db: ctx.db,
 			user_id: ctx.user.id,

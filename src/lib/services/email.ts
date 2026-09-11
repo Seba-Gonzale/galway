@@ -10,6 +10,7 @@ import {
 	type EmailLocale
 } from '$lib/server/email/templates';
 import type { ServiceCtx } from './index';
+import { getSettings } from './settings';
 
 const RateLimit = {
 	windowMs: 60_000,
@@ -45,12 +46,7 @@ async function resolveAccount(
 }
 
 async function getEmailLocale(ctx: ServiceCtx): Promise<EmailLocale> {
-	const rows = await ctx.db
-		.select({ value: schema.settings.value })
-		.from(schema.settings)
-		.where(eq(schema.settings.key, 'email_locale'))
-		.limit(1);
-	return rows[0]?.value === 'ja' ? 'ja' : 'en';
+	return (await getSettings(ctx)).email_locale;
 }
 
 /**
@@ -123,32 +119,14 @@ function createAlertProvider(env: Env, alertTo: string): ReturnType<typeof creat
  * Uses Cloudflare send_email binding when available, otherwise the HTTP provider.
  */
 export async function sendAdminAlert(ctx: ServiceCtx, data: AdminAlertEmailData): Promise<void> {
-	const [alertEnabledRow, alertToRow, localeRow] = await Promise.all([
-		ctx.db
-			.select({ value: schema.settings.value })
-			.from(schema.settings)
-			.where(eq(schema.settings.key, 'alert_email_enabled'))
-			.limit(1),
-		ctx.db
-			.select({ value: schema.settings.value })
-			.from(schema.settings)
-			.where(eq(schema.settings.key, 'notification_email'))
-			.limit(1),
-		ctx.db
-			.select({ value: schema.settings.value })
-			.from(schema.settings)
-			.where(eq(schema.settings.key, 'email_locale'))
-			.limit(1)
-	]);
+	const settings = await getSettings(ctx);
+	if (settings.alert_email_enabled === false) return;
 
-	const alertEnabled = alertEnabledRow[0]?.value !== 'false';
-	if (!alertEnabled) return;
-
-	const alertTo = alertToRow[0]?.value || ctx.env.ALERT_EMAIL_TO;
+	const alertTo = settings.notification_email || ctx.env.ALERT_EMAIL_TO;
 	if (!alertTo) return;
 	if (!checkRateLimit(`alert:${data.subject}`)) return;
 
-	const locale: EmailLocale = localeRow[0]?.value === 'ja' ? 'ja' : 'en';
+	const locale: EmailLocale = settings.email_locale;
 	const provider = createAlertProvider(ctx.env, alertTo);
 	const { subject, html, text } = adminAlertEmail(data, locale);
 	await provider.send({ to: alertTo, subject, html, text });

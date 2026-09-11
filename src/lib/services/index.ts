@@ -3,11 +3,19 @@ import { getDb } from '$lib/server/db';
 
 export type DB = ReturnType<typeof getDb>;
 
+export type ServiceSettings = {
+	notification_email: string;
+	low_stock_alert_enabled: boolean;
+	alert_email_enabled: boolean | undefined;
+	email_locale: 'en' | 'ja';
+};
+
 export type ServiceCtx = {
 	db: DB;
 	env: Env;
 	user: NonNullable<App.Locals['user']>;
 	request?: Request;
+	settings?: Promise<ServiceSettings>;
 };
 
 export function makeCtx(platform: App.Platform, locals: App.Locals, request?: Request): ServiceCtx {

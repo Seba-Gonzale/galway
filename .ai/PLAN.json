@@ -1001,7 +1001,7 @@
 
 		"TASK-028": {
 			"module": "MOD-020",
-			"status": "PENDING",
+			"status": "COMPLETED",
 
 			"objective": "Cachear settings por request en el ctx para eliminar las 3-4 consultas repetidas a la tabla settings (sendAdminAlert, getEmailLocale, dashboard)",
 
@@ -1011,7 +1011,8 @@
 				"src/lib/services/index.ts",
 				"src/lib/services/settings.ts",
 				"src/lib/services/email.ts",
-				"src/lib/services/inventory_schedule.ts"
+				"src/lib/services/inventory_schedule.ts",
+				"src/lib/services/dashboard.ts"
 			],
 
 			"protected_scope": ["src/lib/server/db/schema.ts"],
